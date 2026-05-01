@@ -3,13 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Divya — Creative Visual Designer</title>
-    <meta name="description" content="Divya is a Creative Visual Designer crafting unforgettable brand identities, UI, social media, and photography." />
-    <meta property="og:title" content="Divya — Creative Visual Designer" />
-    <meta property="og:description" content="Making brands look so good, your competitors will cry." />
+    <title>For Divya 🎂</title>
+    <meta name="description" content="We made you a website. Because a cake felt insufficient." />
+    <meta property="og:title" content="This is for Divya." />
+    <meta property="og:description" content="We made you a website. Because a cake felt insufficient." />
     <meta name="theme-color" content="#080808" />
-
-    <!-- Fonts via Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,395 +16,270 @@
     />
   </head>
   <body>
-    <!-- Grain overlay -->
+
+    <!-- Grain texture overlay -->
     <div class="grain" aria-hidden="true"></div>
 
-    <!-- Custom Cursor -->
-    <div class="cursor-dot" id="cursorDot"></div>
+    <!-- Custom cursor -->
+    <div class="cursor-dot"  id="cursorDot"></div>
     <div class="cursor-ring" id="cursorRing"></div>
 
-    <!-- ══════════════════════════════════════
-         RUNAWAY BUTTONS (Fixed, float above all)
-         ══════════════════════════════════════ -->
-    <button class="runaway-btn" id="btnNishi" aria-label="Don't click me">
-      Call Nishi 😈
-    </button>
-    <button class="runaway-btn runaway-btn--alt" id="btnJeffrey" aria-label="Still don't click me">
-      Call Jeffrey 🏃‍♂️
-    </button>
+    <!-- Runaway buttons — float above everything, never catchable -->
+    <button class="runaway-btn"          id="btnNishi">Call Nishi 😈</button>
+    <button class="runaway-btn btn--alt" id="btnJeffrey">Call Jeffrey 🏃‍♂️</button>
 
-    <!-- ══════════════════════════════════════
-         NAVIGATION
-         ══════════════════════════════════════ -->
-    <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
-      <a href="#home" class="nav-logo" aria-label="Home">
-        <span class="logo-accent">D</span>ivya<span class="logo-dot">.</span>
+    <!-- ═══════════════════════════
+         NAV
+         ═══════════════════════════ -->
+    <nav class="nav" id="nav">
+      <a href="#" class="nav-logo">
+        <span class="logo-accent">c</span>divya<span class="logo-dot">.</span>
       </a>
-
-      <div class="nav-links" id="navLinks">
-        <a href="#work" class="nav-link">Work</a>
-        <a href="#gallery" class="nav-link">Gallery</a>
-        <a href="#videos" class="nav-link">Videos</a>
-        <a href="#games" class="nav-link">Games</a>
-        <a href="#contact" class="nav-link cta-link">Let's Talk</a>
-      </div>
-
-      <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
-        <span class="hamburger-bar"></span>
-        <span class="hamburger-bar"></span>
-        <span class="hamburger-bar"></span>
-      </button>
+      <span class="nav-pill">🎂 it's her day</span>
     </nav>
 
-    <!-- ══════════════════════════════════════
+    <!-- ═══════════════════════════
          HERO
-         ══════════════════════════════════════ -->
-    <section class="hero" id="home" aria-label="Hero">
+         ═══════════════════════════ -->
+    <section class="hero" id="home">
       <div class="hero-bg">
         <canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas>
-        <div class="hero-orb hero-orb--1"></div>
-        <div class="hero-orb hero-orb--2"></div>
-        <div class="hero-orb hero-orb--3"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
       </div>
 
-      <div class="hero-content">
-        <div class="hero-eyebrow">
-          <span class="eyebrow-dot"></span>
-          <span>Available for work</span>
-          <span class="eyebrow-dot"></span>
+      <div class="hero-body">
+        <div class="hero-from">
+          <span class="from-dot"></span>
+          from the whole gang, with love
+          <span class="from-dot"></span>
         </div>
 
-        <h1 class="hero-title" aria-label="Creative Visual Designer">
-          <span class="hero-word" data-word="CREATIVE">CREATIVE</span>
-          <span class="hero-word hero-word--accent" data-word="VISUAL">VISUAL</span>
-          <span class="hero-word" data-word="DESIGNER">DESIGNER</span>
+        <h1 class="hero-title">
+          <span class="hw">THIS</span>
+          <span class="hw hw-is">IS</span>
+          <span class="hw">FOR</span>
+          <span class="hw hw-name">DIVYA.</span>
         </h1>
 
-        <div class="hero-byline">
-          <p>
-            Hi, I'm <strong class="name-highlight">Divya</strong> — I make brands look so good,
-            your competitors will cry. <em>(I also make their logos. Don't tell them.)</em>
-          </p>
-        </div>
+        <p class="hero-sub">
+          We made you a website.<br />
+          <em>Because a cake felt insufficient.</em>
+        </p>
 
-        <div class="hero-actions">
-          <a href="#work" class="btn btn--primary">See My Work <span class="btn-arrow">↓</span></a>
-          <a href="#contact" class="btn btn--ghost">Let's Talk</a>
+        <div class="scroll-cue" aria-hidden="true">
+          <span>scroll to receive your gift</span>
+          <div class="scroll-bar"></div>
         </div>
       </div>
 
-      <!-- Floating credential chips -->
-      <div class="hero-chips" aria-hidden="true">
-        <div class="chip chip--tl">Brand Identity ✦</div>
-        <div class="chip chip--tr">📸 Photography</div>
-        <div class="chip chip--bl">✦ UI Design</div>
-        <div class="chip chip--br">Social Media 📱</div>
-      </div>
-
-      <div class="hero-scroll" aria-hidden="true">
-        <span class="scroll-label">scroll</span>
-        <div class="scroll-ticker"></div>
+      <!-- floating credential chips -->
+      <div class="chips" aria-hidden="true">
+        <div class="chip chip-a">designer ✦</div>
+        <div class="chip chip-b">📸 photographer</div>
+        <div class="chip chip-c">puzzle nerd 🧩</div>
+        <div class="chip chip-d">✦ our person</div>
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════
-         MARQUEE RIBBON
-         ══════════════════════════════════════ -->
-    <div class="marquee-ribbon" aria-hidden="true">
-      <div class="marquee-track" id="marqueeTrack">
-        <span class="mq-item">Brand Identity</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Logo Design</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">UI Design</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Photography</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Social Media</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Brand Collateral</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Newsletters</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Pitch Decks</span>
-        <span class="mq-sep">✦</span>
-        <!-- Duplicated for seamless loop -->
-        <span class="mq-item">Brand Identity</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Logo Design</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">UI Design</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Photography</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Social Media</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Brand Collateral</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Newsletters</span>
-        <span class="mq-sep">✦</span>
-        <span class="mq-item">Pitch Decks</span>
-        <span class="mq-sep">✦</span>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════
-         WORK / SERVICES
-         ══════════════════════════════════════ -->
-    <section class="section work-section" id="work" aria-label="Services">
+    <!-- ═══════════════════════════
+         SECTION 1 — THE ACCUSED
+         ═══════════════════════════ -->
+    <section class="section" id="accused">
       <div class="container">
-        <header class="section-header reveal-block">
-          <span class="section-tag">What I Do</span>
-          <h2 class="section-title">
-            I don't just design.<br />
-            I make things <em>impossible</em><br />to ignore.
-          </h2>
-          <p class="section-desc">
-            From that tiny favicon to the billboard you slow down to read — if it's visual, I've
-            probably touched it. (Clean hands. Promise.)
-          </p>
-        </header>
+        <p class="s-label reveal">Exhibit A through F</p>
+        <h2 class="s-title reveal">
+          Things Divya does<br />
+          <em>that make the rest of us look bad.</em>
+        </h2>
 
-        <div class="services-grid">
-          <article class="service-card reveal-block" style="--delay: 0.05s">
-            <div class="service-icon-wrap">
-              <span class="service-icon">🎨</span>
-            </div>
-            <h3 class="service-name">Brand Identity</h3>
-            <p class="service-desc">
-              Logo, brand guidelines, colour stories, typography systems — the full personality
-              transplant your brand didn't know it needed.
-            </p>
-            <div class="service-badge">Core Service</div>
+        <div class="crimes-grid">
+
+          <article class="crime-card reveal" style="--d:.05s">
+            <span class="crime-no">01</span>
+            <div class="crime-icon">🎨</div>
+            <h3>Redesigns your logo<br />without being asked.</h3>
+            <p>You showed her a photo of your business card. She sent back a full brand kit in 20 minutes. Unprompted. Unrequested. Unstoppable.</p>
           </article>
 
-          <article class="service-card reveal-block" style="--delay: 0.1s">
-            <div class="service-icon-wrap">
-              <span class="service-icon">📱</span>
-            </div>
-            <h3 class="service-name">Social Media</h3>
-            <p class="service-desc">
-              Scroll-stopping posts and stories that make people forget they were about to check
-              their emails. (You're welcome, brands.)
-            </p>
-            <div class="service-badge">Core Service</div>
+          <article class="crime-card reveal" style="--d:.10s">
+            <span class="crime-no">02</span>
+            <div class="crime-icon">📸</div>
+            <h3>Her phone has 47,000 photos.<br />Every single one is good.</h3>
+            <p>Yours have red eyes and bad lighting. Hers look like a magazine spread. We don't talk about this. We just accept it.</p>
           </article>
 
-          <article class="service-card reveal-block" style="--delay: 0.15s">
-            <div class="service-icon-wrap">
-              <span class="service-icon">🖥️</span>
-            </div>
-            <h3 class="service-name">UI Design</h3>
-            <p class="service-desc">
-              Websites so easy to navigate, even your tech-challenged uncle can find the checkout
-              button. Mostly.
-            </p>
-            <div class="service-badge">Core Service</div>
+          <article class="crime-card reveal" style="--d:.15s">
+            <span class="crime-no">03</span>
+            <div class="crime-icon">👁️</div>
+            <h3>Notices when a font is wrong<br />from across the room.</h3>
+            <p>"Is that Helvetica or Arial?" — Divya, squinting at a billboard from a moving car. She was right. She's always right.</p>
           </article>
 
-          <article class="service-card reveal-block" style="--delay: 0.2s">
-            <div class="service-icon-wrap">
-              <span class="service-icon">📄</span>
-            </div>
-            <h3 class="service-name">Brand Collateral</h3>
-            <p class="service-desc">
-              Decks, newsletters, emails — designed so beautifully they actually get opened. Wild
-              concept, I know.
-            </p>
-            <div class="service-badge">Core Service</div>
+          <article class="crime-card reveal" style="--d:.20s">
+            <span class="crime-no">04</span>
+            <div class="crime-icon">🧩</div>
+            <h3>Solves puzzles faster than<br />you solve your problems.</h3>
+            <p>She will finish the puzzle you've been "working on" for two weeks in a single afternoon. Then rearrange it and do it again.</p>
           </article>
 
-          <article class="service-card reveal-block" style="--delay: 0.25s">
-            <div class="service-icon-wrap">
-              <span class="service-icon">📸</span>
-            </div>
-            <h3 class="service-name">Photography</h3>
-            <p class="service-desc">
-              Sometimes the best design is perfect light and a great eye. Also available in
-              portrait mode. And golden hour. Especially golden hour.
-            </p>
-            <div class="service-badge service-badge--passion">Passion</div>
+          <article class="crime-card reveal" style="--d:.25s">
+            <span class="crime-no">05</span>
+            <div class="crime-icon">🌈</div>
+            <h3>Has opinions about colours<br />that are actually correct.</h3>
+            <p>"That's not red, that's coral." She will say this. She will be right. You will start seeing colour differently. This is her gift and her curse.</p>
           </article>
 
-          <!-- CTA card -->
-          <article class="service-card service-card--cta reveal-block" style="--delay: 0.3s">
-            <p class="cta-card-label">Got a project?</p>
-            <strong class="cta-card-text">Let's make it look&nbsp;incredible.</strong>
-            <a href="#contact" class="btn btn--primary btn--sm">Start a Project →</a>
+          <article class="crime-card reveal" style="--d:.30s">
+            <span class="crime-no">06</span>
+            <div class="crime-icon">✨</div>
+            <h3>Makes everything look better<br />just by being in the room.</h3>
+            <p>Scientifically unverified. Anecdotally, completely true. We have data. The data is us.</p>
           </article>
+
         </div>
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════
-         GALLERY
-         ══════════════════════════════════════ -->
-    <section class="section gallery-section" id="gallery" aria-label="Photo Gallery">
+    <!-- ═══════════════════════════
+         SECTION 2 — THE VERDICT
+         ═══════════════════════════ -->
+    <section class="section verdict-section" id="verdict">
       <div class="container">
-        <header class="section-header reveal-block">
-          <span class="section-tag">Gallery</span>
-          <h2 class="section-title">Through the Lens</h2>
-          <p class="section-desc">
-            A peek into what Divya sees when she's not designing. (Spoiler: she's always
-            composing shots.)
-          </p>
-        </header>
-
-        <div class="gallery-grid" id="galleryGrid">
-          <!-- Gallery items injected by JS / Supabase later -->
-          <div class="gallery-empty reveal-block">
-            <span class="gallery-empty-icon">📸</span>
-            <p>Photos loading soon…</p>
-            <span class="gallery-empty-sub">This section will come alive once connected to Supabase.</span>
-          </div>
+        <div class="verdict-wrap reveal">
+          <p class="verdict-label">The Verdict</p>
+          <blockquote class="verdict-quote">
+            "She's annoying to know because she makes everything
+            <em>impossibly beautiful</em> —
+            and we love her unconditionally for it."
+          </blockquote>
+          <p class="verdict-attr">— The Whole Gang, unanimously, every single day</p>
         </div>
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════
-         VIDEO REPO
-         ══════════════════════════════════════ -->
-    <section class="section video-section" id="videos" aria-label="Video Repository">
+    <!-- ═══════════════════════════
+         SECTION 3 — FUN FACTS
+         ═══════════════════════════ -->
+    <section class="section facts-section" id="facts">
       <div class="container">
-        <header class="section-header reveal-block">
-          <span class="section-tag">Videos</span>
-          <h2 class="section-title">Motion&nbsp;&amp;<br />Process</h2>
-          <p class="section-desc">
-            Behind the scenes, time-lapses, reels — the moving pictures that prove there's
-            real magic happening.
-          </p>
-        </header>
+        <p class="s-label reveal">Certified True</p>
+        <h2 class="s-title reveal">Things we know<br /><em>about Divya.</em></h2>
 
-        <div class="video-grid" id="videoGrid">
-          <div class="video-empty reveal-block">
-            <span class="video-empty-icon">🎬</span>
-            <p>Videos coming soon…</p>
-            <span class="video-empty-sub">Feed the video URLs and this section lights up.</span>
-          </div>
-        </div>
+        <ul class="facts-list" role="list">
+          <li class="fact reveal" style="--d:.00s"><span class="fact-arrow">→</span><p>Has a sixth sense for white space. Doctors can't explain it.</p></li>
+          <li class="fact reveal" style="--d:.07s"><span class="fact-arrow">→</span><p>Has strong feelings about kerning. Will express them. At length. You asked.</p></li>
+          <li class="fact reveal" style="--d:.14s"><span class="fact-arrow">→</span><p>Can look at any brand and immediately know what's wrong with it. And fix it. Before lunch.</p></li>
+          <li class="fact reveal" style="--d:.21s"><span class="fact-arrow">→</span><p>Her Instagram grid is probably better than your portfolio. Don't check. Just trust.</p></li>
+          <li class="fact reveal" style="--d:.28s"><span class="fact-arrow">→</span><p>Takes photographs the way normal people breathe — constantly, without thinking, always perfectly.</p></li>
+          <li class="fact reveal" style="--d:.35s"><span class="fact-arrow">→</span><p>Will spend 3 hours making one slide look effortless. Then say "I just threw it together."</p></li>
+        </ul>
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════
-         GAMES
-         ══════════════════════════════════════ -->
-    <section class="section games-section" id="games" aria-label="Mini Games">
+    <!-- ═══════════════════════════
+         SECTION 4 — THE CHALLENGE
+         ═══════════════════════════ -->
+    <section class="section challenge-section" id="challenge">
       <div class="container">
-        <header class="section-header reveal-block">
-          <span class="section-tag">Mini Games</span>
-          <h2 class="section-title">
-            Take a Break.<br />
-            You Deserve&nbsp;It.
-          </h2>
-          <p class="section-desc">
-            Divya loves puzzles. Do you? Let's find out if your brain is as good as your taste
-            in&nbsp;websites.
-          </p>
-        </header>
+        <div class="challenge-inner">
 
-        <div class="games-grid">
-          <div class="game-card game-card--puzzle reveal-block">
-            <div class="game-card-glow"></div>
-            <div class="game-card-content">
-              <div class="game-icon">🧩</div>
-              <h3 class="game-name">Sliding Puzzle</h3>
-              <p class="game-desc">Arrange tiles in order. Divya can do it in 47 moves. Can&nbsp;you?</p>
-              <button class="btn btn--primary btn--sm" id="openPuzzle">Play Now</button>
-            </div>
+          <div class="challenge-text reveal">
+            <p class="s-label">A Birthday Challenge</p>
+            <h2 class="s-title">She loves puzzles.<br /><em>So here's one.</em></h2>
+            <p class="challenge-desc">
+              Divya can solve the 15-puzzle in under 100 moves. Allegedly.<br />
+              Prove you're worthy of being her friend.
+            </p>
+            <button class="btn btn-primary" id="openPuzzle">
+              Accept the Challenge 🧩
+            </button>
+            <p class="challenge-hint">More brain games on the way. She'll destroy you at those too.</p>
           </div>
 
-          <div class="game-card game-card--soon reveal-block" style="--delay: 0.1s">
-            <div class="game-card-glow"></div>
-            <div class="game-card-content">
-              <div class="game-icon">🎮</div>
-              <h3 class="game-name">More Games</h3>
-              <p class="game-desc">Creativity loading… ETA unknown. Check back when inspiration strikes.</p>
-              <button class="btn btn--ghost btn--sm" disabled>Coming Soon</button>
+          <div class="challenge-visual reveal" style="--d:.15s" aria-hidden="true">
+            <div class="pp-grid">
+              <div class="pp">1</div><div class="pp">2</div><div class="pp">3</div><div class="pp">4</div>
+              <div class="pp">5</div><div class="pp">6</div><div class="pp">7</div><div class="pp">8</div>
+              <div class="pp">9</div><div class="pp">10</div><div class="pp pp-empty"></div><div class="pp">11</div>
+              <div class="pp">13</div><div class="pp">14</div><div class="pp">15</div><div class="pp pp-off">12</div>
             </div>
+            <p class="pp-note">so close. yet so far.</p>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════
-         CONTACT / FOOTER
-         ══════════════════════════════════════ -->
-    <section class="section contact-section" id="contact" aria-label="Contact">
+    <!-- ═══════════════════════════
+         SECTION 5 — MESSAGES
+         ═══════════════════════════ -->
+    <section class="section messages-section" id="messages">
       <div class="container">
-        <div class="contact-inner reveal-block">
-          <span class="section-tag">Get In Touch</span>
-          <h2 class="contact-title">
-            Have a project?<br />
-            <em>Let's make it beautiful.</em>
-          </h2>
-          <p class="contact-desc">
-            Whether it's a full rebrand, a social media kit, or just making your deck not look like
-            it was designed in 2009 — I'm in.
-          </p>
-          <a href="mailto:divya@example.com" class="contact-cta btn btn--primary">
-            Say Hello →
-          </a>
+        <p class="s-label reveal">From the Gang</p>
+        <h2 class="s-title reveal">They had things<br /><em>to say.</em></h2>
+
+        <div class="msg-grid">
+
+          <div class="msg-card reveal" style="--d:.05s">
+            <p>"Happy birthday to the person who made me care about brand colours. I used to think blue was blue. Now I know there are 400 blues and only one is correct. Thanks for that."</p>
+            <div class="msg-from">— Someone from the gang</div>
+          </div>
+
+          <div class="msg-card msg-hl reveal" style="--d:.12s">
+            <p>"You make things beautiful. You make people feel seen. You make deadlines look easy. You are, objectively, a lot. We love every single bit of it."</p>
+            <div class="msg-from">— The whole group, probably</div>
+          </div>
+
+          <div class="msg-card reveal" style="--d:.19s">
+            <p>"I asked you for a logo once. You gave me a brand identity, a style guide, and a life plan. I only needed the logo. Not complaining though."</p>
+            <div class="msg-from">— Someone who owes you a lot</div>
+          </div>
+
         </div>
+
+        <p class="msg-footer reveal" style="--d:.30s">
+          More messages incoming as the gang figures out how to express feelings in under 280 characters 🫠
+        </p>
       </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="footer">
       <div class="container">
-        <div class="footer-row">
-          <div class="footer-brand">
-            <span class="footer-logo">Divya.</span>
-            <p class="footer-tagline">Made with ✦ and a concerning amount of coffee.</p>
-          </div>
-          <nav class="footer-nav" aria-label="Footer navigation">
-            <a href="#work">Work</a>
-            <a href="#gallery">Gallery</a>
-            <a href="#games">Games</a>
-            <a href="#contact">Contact</a>
-          </nav>
-          <div class="footer-social">
-            <a href="#" aria-label="Instagram" class="social-link">Instagram</a>
-            <a href="#" aria-label="Behance" class="social-link">Behance</a>
-            <a href="#" aria-label="LinkedIn" class="social-link">LinkedIn</a>
-          </div>
+        <div class="footer-center">
+          <div class="footer-logo">cdivya.</div>
+          <p>Made with unreasonable amounts of love.</p>
+          <p class="footer-dim">Happy Birthday, Divya. You deserve every pixel of this.</p>
         </div>
         <div class="footer-bottom">
-          <p>© 2025 Divya. All rights reserved. (Even the funny ones.)</p>
-          <p class="footer-credit">
-            Built with love by someone who really wanted those two buttons to be clickable.
-          </p>
+          <p>© 2025 — Your gang.</p>
+          <p class="footer-ps">P.S. Try catching those buttons. You can't. That's the point.</p>
         </div>
       </div>
     </footer>
 
-    <!-- ══════════════════════════════════════
-         PUZZLE MODAL
-         ══════════════════════════════════════ -->
-    <div class="modal" id="puzzleModal" role="dialog" aria-modal="true" aria-label="Sliding Puzzle Game" aria-hidden="true">
+    <!-- PUZZLE MODAL -->
+    <div class="modal" id="puzzleModal" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="modal-overlay" id="modalOverlay"></div>
       <div class="modal-box">
-        <button class="modal-close" id="modalClose" aria-label="Close puzzle">✕</button>
+        <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
         <div class="modal-header">
           <span class="modal-emoji">🧩</span>
           <h2 class="modal-title">Sliding Puzzle</h2>
-          <p class="modal-desc">Arrange 1–15 in order. The empty tile is your friend.</p>
+          <p class="modal-desc">Arrange 1–15 in order. Arrow keys work too.</p>
         </div>
-        <div class="puzzle-board" id="puzzleBoard" role="grid" aria-label="Puzzle board"></div>
+        <div class="puzzle-board" id="puzzleBoard" role="grid"></div>
         <div class="puzzle-footer">
-          <div class="puzzle-stat">
-            Moves: <span id="moveCount" class="stat-val">0</span>
-          </div>
-          <div class="puzzle-stat">
-            Time: <span id="timerDisplay" class="stat-val">0:00</span>
-          </div>
-          <button class="btn btn--ghost btn--sm" id="shuffleBtn">Shuffle</button>
+          <div class="p-stat">Moves: <span id="moveCount" class="p-val">0</span></div>
+          <div class="p-stat">Time: <span id="timerDisplay" class="p-val">0:00</span></div>
+          <button class="btn btn-ghost btn-sm" id="shuffleBtn">Shuffle</button>
         </div>
         <p class="puzzle-hint" id="puzzleHint"></p>
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════
-         WIN CONFETTI CANVAS
-         ══════════════════════════════════════ -->
     <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
 
     <script type="module" src="/src/main.js"></script>

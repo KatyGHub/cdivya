@@ -145,12 +145,12 @@ export function initPuzzle() {
       tile.setAttribute('role', 'gridcell');
 
       if (val === 0) {
-        tile.classList.add('p-tile--empty');
+        tile.classList.add('p-empty');
         tile.setAttribute('aria-label', 'empty');
       } else {
         tile.textContent = val;
         tile.setAttribute('aria-label', `tile ${val}`);
-        if (isCorrect(val, idx)) tile.classList.add('p-tile--correct');
+        if (isCorrect(val, idx)) tile.classList.add('p-correct');
         tile.addEventListener('click', () => tryMove(idx));
       }
 
@@ -179,7 +179,7 @@ export function initPuzzle() {
 
   // ── Keyboard support ──
   document.addEventListener('keydown', (e) => {
-    if (!modal.classList.contains('is-open')) return;
+    if (!modal.classList.contains('open')) return;
     const empty = tiles.indexOf(0);
     const er = Math.floor(empty / SIZE), ec = empty % SIZE;
     let target = -1;
@@ -224,14 +224,14 @@ export function initPuzzle() {
   // ── Open / close modal ──
   function openModal() {
     newGame();
-    modal.classList.add('is-open');
+    modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     board.focus?.();
   }
 
   function closeModal() {
-    modal.classList.remove('is-open');
+    modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     stopTimer();

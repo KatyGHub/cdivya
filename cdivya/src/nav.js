@@ -12,7 +12,7 @@ export function initNav() {
 
   // ── Scroll-aware nav ───────────────────────────
   const handleScroll = () => {
-    nav.classList.toggle('is-scrolled', window.scrollY > 40);
+    nav.classList.toggle('scrolled', window.scrollY > 40);
   };
 
   window.addEventListener('scroll', handleScroll, { passive: true });
@@ -20,21 +20,21 @@ export function initNav() {
 
   // ── Hamburger toggle ───────────────────────────
   const openMenu = () => {
-    navLinks.classList.add('is-mobile-open');
+    navLinks.classList.add('mobile-open');
     hamburger.classList.add('is-open');
     hamburger.setAttribute('aria-expanded', 'true');
     document.body.style.overflow = 'hidden';
   };
 
   const closeMenu = () => {
-    navLinks.classList.remove('is-mobile-open');
+    navLinks.classList.remove('mobile-open');
     hamburger.classList.remove('is-open');
     hamburger.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
   };
 
   hamburger?.addEventListener('click', () => {
-    navLinks.classList.contains('is-mobile-open') ? closeMenu() : openMenu();
+    navLinks.classList.contains('mobile-open') ? closeMenu() : openMenu();
   });
 
   // Close on link click

@@ -60,13 +60,13 @@ export function initCursor() {
     el.addEventListener('mouseenter', () => {
       if (hovering) return;
       hovering = true;
-      dot.classList.add('is-hovering');
-      ring.classList.add('is-hovering');
+      dot.classList.add('on');
+      ring.classList.add('on');
     });
     el.addEventListener('mouseleave', () => {
       hovering = false;
-      dot.classList.remove('is-hovering');
-      ring.classList.remove('is-hovering');
+      dot.classList.remove('on');
+      ring.classList.remove('on');
     });
   }
 
