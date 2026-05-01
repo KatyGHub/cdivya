@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Games — cdivya</title>
+    <meta name="theme-color" content="#080808" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="cursor-dot"  id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+    <button class="runaway-btn"          id="btnNishi">Call Nishi 😈</button>
+    <button class="runaway-btn btn--alt" id="btnJeffrey">Call Jeffrey 🏃‍♂️</button>
+
+    <nav class="nav" id="nav">
+      <a href="/" class="nav-logo"><span class="logo-accent">c</span>divya<span class="logo-dot">.</span></a>
+      <a href="/" class="nav-back">← Back</a>
+    </nav>
+
+    <!-- GAMES HERO -->
+    <section class="games-hero">
+      <div class="container">
+        <p class="s-label">Brain Damage Zone</p>
+        <h1 class="games-hero-title">
+          Three games.<br />
+          <em>Zero mercy.</em>
+        </h1>
+        <p class="games-hero-sub">Divya breezed through all three. How long will you last?</p>
+      </div>
+    </section>
+
+    <!-- GAME CARDS -->
+    <section class="games-grid-section">
+      <div class="container">
+        <div class="game-cards">
+
+          <div class="game-card gc-puzzle" id="openPuzzleCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">01</div>
+            <div class="gc-icon">🧩</div>
+            <h2 class="gc-name">The Slide</h2>
+            <p class="gc-desc">Classic 15-tile sliding puzzle. Divya's record: 47 moves. Your record: still zero.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag">Unlocked</div>
+          </div>
+
+          <div class="game-card gc-crossword" id="openCrosswordCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">02</div>
+            <div class="gc-icon">🔠</div>
+            <h2 class="gc-name">The Crossword</h2>
+            <p class="gc-desc">Words hidden in a grid. Clues locked until you earn them. Themed entirely around Divya's world.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag">Unlocked</div>
+          </div>
+
+          <div class="game-card gc-cipher" id="openCipherCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">03</div>
+            <div class="gc-icon">🔐</div>
+            <h2 class="gc-name">The Cipher</h2>
+            <p class="gc-desc">A secret message, scrambled. Every letter maps to another. Decode it. New cipher every session.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag">Unlocked</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PUZZLE MODAL ═══ -->
+    <div class="modal" id="puzzleModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="puzzleOverlay"></div>
+      <div class="modal-box modal-box--wide">
+        <button class="modal-close" id="puzzleClose">✕</button>
+        <div class="modal-header">
+          <span class="modal-emoji">🧩</span>
+          <h2 class="modal-title">The Slide</h2>
+          <p class="modal-desc" id="puzzleTaunt">Divya's record: 47 moves. Yours: ∞. Arrow keys work too.</p>
+        </div>
+        <div class="puzzle-board" id="puzzleBoard" role="grid"></div>
+        <div class="puzzle-footer">
+          <div class="p-stat">Moves <span class="p-val" id="moveCount">0</span></div>
+          <div class="p-stat">Time <span class="p-val" id="timerDisplay">0:00</span></div>
+          <button class="btn btn-ghost btn-sm" id="shuffleBtn">Shuffle</button>
+        </div>
+        <p class="puzzle-hint" id="puzzleHint"></p>
+      </div>
+    </div>
+
+    <!-- ═══ CROSSWORD MODAL ═══ -->
+    <div class="modal" id="crosswordModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="crosswordOverlay"></div>
+      <div class="modal-box modal-box--xl">
+        <button class="modal-close" id="crosswordClose">✕</button>
+        <div class="cw-layout">
+          <div class="cw-left">
+            <div class="modal-header">
+              <span class="modal-emoji">🔠</span>
+              <h2 class="modal-title">The Crossword</h2>
+              <p class="modal-desc">Click a cell to select. Type to fill. Click a clue number to reveal its hint.</p>
+            </div>
+            <div class="cw-grid-wrap">
+              <div class="cw-grid" id="cwGrid" role="grid" aria-label="Crossword grid"></div>
+            </div>
+            <div class="cw-controls">
+              <button class="btn btn-ghost btn-sm" id="cwCheck">Check</button>
+              <button class="btn btn-ghost btn-sm" id="cwClear">Clear</button>
+              <div class="cw-status" id="cwStatus"></div>
+            </div>
+          </div>
+          <div class="cw-right">
+            <div class="cw-clues">
+              <div class="cw-clue-group">
+                <h3 class="cw-clue-heading">Across</h3>
+                <div id="cwCluesAcross" class="cw-clue-list"></div>
+              </div>
+              <div class="cw-clue-group">
+                <h3 class="cw-clue-heading">Down</h3>
+                <div id="cwCluesDown" class="cw-clue-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CIPHER MODAL ═══ -->
+    <div class="modal" id="cipherModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="cipherOverlay"></div>
+      <div class="modal-box modal-box--wide">
+        <button class="modal-close" id="cipherClose">✕</button>
+        <div class="modal-header">
+          <span class="modal-emoji">🔐</span>
+          <h2 class="modal-title">The Cipher</h2>
+          <p class="modal-desc">Each letter maps to another. Crack the code. New cipher every session.</p>
+        </div>
+
+        <div class="cipher-message" id="cipherMessage" aria-label="Encoded message"></div>
+
+        <div class="cipher-alphabet" id="cipherAlphabet" aria-label="Alphabet key"></div>
+
+        <div class="cipher-controls">
+          <button class="btn btn-ghost btn-sm" id="cipherHint">Reveal a letter 🔍</button>
+          <button class="btn btn-ghost btn-sm" id="cipherReset">Reset</button>
+          <div class="cipher-progress">
+            Decoded: <span class="p-val" id="cipherProgress">0</span> / <span id="cipherTotal">?</span>
+          </div>
+        </div>
+
+        <p class="cipher-status" id="cipherStatus"></p>
+      </div>
+    </div>
+
+    <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+    <script type="module" src="/src/games-main.js"></script>
+  </body>
+</html>
