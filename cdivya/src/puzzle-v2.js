@@ -130,14 +130,14 @@ function playWin() {
 
 // ── Taunts ────────────────────────────────────────────────────────────────────
 const TAUNTS = [
-  "Divya did this in 47 moves. You're at {n}. 🙃",
-  "The puzzle is winning. The puzzle knows.",
-  "At this rate, Divya will design an entire brand before you finish.",
-  "Have you tried looking at the image? Just a thought.",
+  "Your record is 47 moves. You're at {n}. 🙃",
+  "The puzzle is winning. And you know it.",
+  "At this rate you'll finish designing an entire brand before you finish this.",
+  "Have you tried looking at the preview? Just a thought.",
   "{n} moves. Bold strategy. Let's see if it pays off.",
   "The tiles would like to go home. Please.",
-  "Tip: tiles already correct don't need moving. Radical concept.",
-  "Fun fact: Divya solved this left-handed. While eating.",
+  "The ones already in place don't need moving. Radical concept.",
+  "Fun fact: you solved this left-handed once. While eating.",
   "{n} moves in and we are... somewhere. Somewhere is a place.",
   "The empty tile is lonely. It waits. It judges.",
 ];
@@ -285,8 +285,8 @@ export function initPuzzle() {
     won=true; stopTimer(); clearTimeout(tauntTID); playWin();
     board.style.backgroundImage=`url(${artCanvas.toDataURL()})`;
     board.classList.add('p-solved');
-    if(tauntEl) tauntEl.textContent=`🎉 Solved in ${moves} moves! Divya's record: 47. ${moves<=47?'She is shook.':'Keep practising.'}`;
-    if(hintEl)  hintEl.textContent=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} total time. Respect.`;
+    if(tauntEl) tauntEl.textContent=`🎉 Solved in ${moves} moves! Your record: 47. ${moves<=47?'New record. Obviously.':'You\'ll beat it next time.'}`;
+    if(hintEl)  hintEl.textContent=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} total time. Not bad at all.`;
     if(confetti) burst(confetti);
   }
 
