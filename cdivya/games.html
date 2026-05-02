@@ -143,36 +143,71 @@
     <div class="modal" id="jigsawModal" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="modal-overlay" id="jigsawOverlay"></div>
       <div class="modal-box modal-box--jigsaw">
-        <button class="modal-close" id="jigsawClose">✕</button>
+
+        <!-- Header row: title + stats + controls + close (no overlap) -->
         <div class="jigsaw-header">
-          <div>
-            <h2 class="modal-title" style="margin:0">The Jigsaw</h2>
-            <p class="jigsaw-progress-label">Pieces placed: <span id="jzProgress">0 / 0</span></p>
+          <div class="jz-title-block">
+            <h2 class="jz-title">🖼️ The Jigsaw</h2>
+            <div class="jz-stats-row">
+              <span class="jz-stat">⏱ <span id="jzTimer">0:00</span></span>
+              <span class="jz-stat">🧩 <span id="jzProgress">0 / 0</span></span>
+              <span class="jz-stat jz-best" id="jzBestBlock" style="display:none">🏆 <span id="jzBest">—</span></span>
+            </div>
           </div>
-          <div class="jigsaw-controls">
+          <div class="jz-controls-right">
             <select class="jz-select" id="jzPieces">
-              <option value="16">16 pieces</option>
-              <option value="25" selected>25 pieces</option>
-              <option value="36">36 pieces</option>
+              <option value="16">16 pcs</option>
+              <option value="25" selected>25 pcs</option>
+              <option value="36">36 pcs</option>
             </select>
             <button class="btn btn-ghost btn-sm" id="jzShuffle">New image</button>
             <button class="btn btn-ghost btn-sm" id="jzRestart">Restart</button>
+            <button class="jz-close-btn" id="jigsawClose" aria-label="Close">✕</button>
           </div>
         </div>
-        <div class="jigsaw-canvas-wrap" id="jigsawCanvas"></div>
-        <div class="jz-loading" id="jzLoading">
-          <div class="jz-loading-dot"></div>
-          <div class="jz-loading-dot"></div>
-          <div class="jz-loading-dot"></div>
-          <p>Loading pieces…</p>
-        </div>
-        <div class="jz-solved-banner" id="jzSolved">
-          <span class="jz-solved-emoji">🎉</span>
-          <p class="jz-solved-text">Puzzle complete!</p>
-          <div class="jz-solved-actions">
-            <button class="btn btn-primary btn-sm" id="jzPlayAgain">Play again</button>
-            <button class="btn btn-ghost btn-sm" id="jzNewImg">New image</button>
+
+        <!-- Canvas area -->
+        <div class="jigsaw-canvas-wrap" id="jigsawCanvas">
+
+          <!-- Preview overlay: shown before Start is clicked -->
+          <div class="jz-preview-overlay" id="jzPreview">
+            <img class="jz-preview-img" id="jzPreviewImg" alt="Puzzle image" />
+            <div class="jz-preview-info">
+              <p class="jz-preview-label">Study the image. You have 5 seconds.</p>
+              <div class="jz-countdown" id="jzCountdown">5</div>
+              <button class="btn btn-primary" id="jzStartBtn">Start Puzzle ✦</button>
+            </div>
           </div>
+
+          <!-- Loading dots -->
+          <div class="jz-loading" id="jzLoading">
+            <div class="jz-loading-dots">
+              <div class="jz-loading-dot"></div>
+              <div class="jz-loading-dot"></div>
+              <div class="jz-loading-dot"></div>
+            </div>
+            <p>Loading pieces…</p>
+          </div>
+
+          <!-- Solved banner -->
+          <div class="jz-solved-banner" id="jzSolved">
+            <div class="jz-solved-inner">
+              <div class="jz-solved-emoji">🎉</div>
+              <p class="jz-solved-title">Puzzle complete!</p>
+              <div class="jz-stars" id="jzStars"></div>
+              <div class="jz-solved-stats">
+                <div class="jz-solved-stat"><span class="jz-solved-val" id="jzFinalTime">—</span><span class="jz-solved-lbl">Time</span></div>
+                <div class="jz-solved-stat"><span class="jz-solved-val" id="jzFinalPieces">—</span><span class="jz-solved-lbl">Pieces</span></div>
+                <div class="jz-solved-stat"><span class="jz-solved-val" id="jzFinalScore">—</span><span class="jz-solved-lbl">Score</span></div>
+              </div>
+              <p class="jz-pb-msg" id="jzPbMsg"></p>
+              <div class="jz-solved-actions">
+                <button class="btn btn-primary" id="jzPlayAgain">Play again</button>
+                <button class="btn btn-ghost" id="jzNewImg">New image</button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
