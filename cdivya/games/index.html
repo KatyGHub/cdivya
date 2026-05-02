@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Games — cdivya</title>
+    <meta name="theme-color" content="#080808" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="cursor-dot"  id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+    <button class="runaway-btn btn--alt" id="btnJeffrey">Call Jeffrey 🏃‍♂️</button>
+
+    <nav class="nav" id="nav">
+      <a href="/" class="nav-logo"><span class="logo-accent">c</span>divya<span class="logo-dot">.</span></a>
+      <a href="/" class="nav-back">← Back</a>
+    </nav>
+
+    <!-- GAMES HERO -->
+    <section class="games-hero">
+      <div class="container">
+        <p class="s-label">You love puzzles. We know.</p>
+        <h1 class="games-hero-title">
+          Three games.<br /><em>All for you.</em>
+        </h1>
+        <p class="games-hero-sub">We built these knowing you'd beat them. That's not the point. The point is you'll try.</p>
+      </div>
+    </section>
+
+    <!-- GAME CARDS -->
+    <section class="games-grid-section">
+      <div class="container">
+        <div class="game-cards">
+
+          <div class="game-card gc-puzzle" id="openPuzzleCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">01</div>
+            <div class="gc-icon">🧩</div>
+            <h2 class="gc-name">The Slide</h2>
+            <p class="gc-desc">15 tiles. Your record is 47 moves. We know you're going to try and beat it right now.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag">Unlocked</div>
+          </div>
+
+          <div class="game-card gc-crossword" id="openCrosswordCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">02</div>
+            <div class="gc-icon">🔠</div>
+            <h2 class="gc-name">The Crossword</h2>
+            <p class="gc-desc">Clues about your world. Things only you would get. Click a number to earn your hint.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag">Unlocked</div>
+          </div>
+
+          <div class="game-card gc-jigsaw" id="openJigsawCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">03</div>
+            <div class="gc-icon">🖼️</div>
+            <h2 class="gc-name">The Jigsaw</h2>
+            <p class="gc-desc">Your photos. Broken into pieces. Because you, of all people, know how to put beautiful things back together.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag">Unlocked</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PUZZLE MODAL ═══ -->
+    <div class="modal" id="puzzleModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="puzzleOverlay"></div>
+      <div class="modal-box modal-box--wide">
+        <button class="modal-close" id="puzzleClose">✕</button>
+        <div class="modal-header">
+          <span class="modal-emoji">🧩</span>
+          <h2 class="modal-title">The Slide</h2>
+          <p class="modal-desc" id="puzzleTaunt">Your record: 47 moves. Think you can do better? Arrow keys work too.</p>
+        </div>
+
+        <!-- Artwork preview strip -->
+        <div class="puzzle-meta">
+          <div class="puzzle-preview" id="puzzlePreview" title="Target image"></div>
+          <div class="puzzle-meta-text">
+            <span class="p-art-label">Now playing:</span>
+            <span class="p-art-name" id="artName">Divya's Palette</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="artBtn">Next artwork →</button>
+        </div>
+
+        <div class="puzzle-board" id="puzzleBoard" role="grid"></div>
+
+        <div class="puzzle-footer">
+          <div class="p-stat">Moves <span class="p-val" id="moveCount">0</span></div>
+          <div class="p-stat">Time <span class="p-val" id="timerDisplay">0:00</span></div>
+          <button class="btn btn-ghost btn-sm" id="shuffleBtn">Shuffle</button>
+        </div>
+        <p class="puzzle-hint" id="puzzleHint"></p>
+      </div>
+    </div>
+
+    <!-- ═══ CROSSWORD MODAL ═══ -->
+    <div class="modal" id="crosswordModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="crosswordOverlay"></div>
+      <div class="modal-box modal-box--xl">
+        <button class="modal-close" id="crosswordClose">✕</button>
+        <div class="cw-layout">
+          <div class="cw-left">
+            <div class="modal-header">
+              <span class="modal-emoji">🔠</span>
+              <h2 class="modal-title">The Crossword</h2>
+              <p class="modal-desc">Click a cell to select. Type to fill. Click a clue number to reveal its hint.</p>
+            </div>
+            <div class="cw-grid-wrap">
+              <div class="cw-grid" id="cwGrid" role="grid" aria-label="Crossword grid"></div>
+            </div>
+            <div class="cw-controls">
+              <button class="btn btn-ghost btn-sm" id="cwCheck">Check</button>
+              <button class="btn btn-ghost btn-sm" id="cwClear">Clear</button>
+              <div class="cw-status" id="cwStatus"></div>
+            </div>
+          </div>
+          <div class="cw-right">
+            <div class="cw-clues">
+              <div class="cw-clue-group">
+                <h3 class="cw-clue-heading">Across</h3>
+                <div id="cwCluesAcross" class="cw-clue-list"></div>
+              </div>
+              <div class="cw-clue-group">
+                <h3 class="cw-clue-heading">Down</h3>
+                <div id="cwCluesDown" class="cw-clue-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ JIGSAW MODAL ═══ -->
+    <div class="modal" id="jigsawModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="jigsawOverlay"></div>
+      <div class="modal-box modal-box--jigsaw">
+
+        <!-- Header row: title + stats + controls + close (no overlap) -->
+        <div class="jigsaw-header">
+          <div class="jz-title-block">
+            <h2 class="jz-title">🖼️ The Jigsaw</h2>
+            <div class="jz-stats-row">
+              <span class="jz-stat">⏱ <span id="jzTimer">0:00</span></span>
+              <span class="jz-stat">🧩 <span id="jzProgress">0 / 0</span></span>
+              <span class="jz-stat jz-best" id="jzBestBlock" style="display:none">🏆 <span id="jzBest">—</span></span>
+            </div>
+          </div>
+          <div class="jz-controls-right">
+            <select class="jz-select" id="jzPieces">
+              <option value="16">16 pcs</option>
+              <option value="25" selected>25 pcs</option>
+              <option value="36">36 pcs</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" id="jzShuffle">New image</button>
+            <button class="btn btn-ghost btn-sm" id="jzRestart">Restart</button>
+            <button class="jz-close-btn" id="jigsawClose" aria-label="Close">✕</button>
+          </div>
+        </div>
+
+        <!-- Canvas area -->
+        <div class="jigsaw-canvas-wrap" id="jigsawCanvas">
+
+          <!-- Preview overlay: shown before Start is clicked -->
+          <div class="jz-preview-overlay" id="jzPreview">
+            <img class="jz-preview-img" id="jzPreviewImg" alt="Puzzle image" />
+            <div class="jz-preview-info">
+              <p class="jz-preview-label">Look at your photo. You have 5 seconds.</p>
+              <div class="jz-countdown" id="jzCountdown">5</div>
+              <button class="btn btn-primary" id="jzStartBtn">Start Puzzle ✦</button>
+            </div>
+          </div>
+
+          <!-- Loading dots -->
+          <div class="jz-loading" id="jzLoading">
+            <div class="jz-loading-dots">
+              <div class="jz-loading-dot"></div>
+              <div class="jz-loading-dot"></div>
+              <div class="jz-loading-dot"></div>
+            </div>
+            <p>Loading pieces…</p>
+          </div>
+
+          <!-- Solved banner -->
+          <div class="jz-solved-banner" id="jzSolved">
+            <div class="jz-solved-inner">
+              <div class="jz-solved-emoji">🎉</div>
+              <p class="jz-solved-title">Puzzle complete!</p>
+              <div class="jz-stars" id="jzStars"></div>
+              <div class="jz-solved-stats">
+                <div class="jz-solved-stat"><span class="jz-solved-val" id="jzFinalTime">—</span><span class="jz-solved-lbl">Time</span></div>
+                <div class="jz-solved-stat"><span class="jz-solved-val" id="jzFinalPieces">—</span><span class="jz-solved-lbl">Pieces</span></div>
+                <div class="jz-solved-stat"><span class="jz-solved-val" id="jzFinalScore">—</span><span class="jz-solved-lbl">Score</span></div>
+              </div>
+              <p class="jz-pb-msg" id="jzPbMsg"></p>
+              <div class="jz-solved-actions">
+                <button class="btn btn-primary" id="jzPlayAgain">Play again</button>
+                <button class="btn btn-ghost" id="jzNewImg">New image</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+    <script type="module" src="/src/games-main.js"></script>
+  </body>
+</html>

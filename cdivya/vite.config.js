@@ -12,12 +12,12 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main:     resolve(__dirname, 'index.html'),
-        games:    resolve(__dirname, 'games.html'),
-        gallery:  resolve(__dirname, 'gallery.html'),
-        videos:   resolve(__dirname, 'videos.html'),
-        story:    resolve(__dirname, 'story.html'),
-        puzzle:   resolve(__dirname, 'puzzle.html'),
-        carousel: resolve(__dirname, 'carousel.html'),
+        games:    resolve(__dirname, 'games/index.html'),
+        gallery:  resolve(__dirname, 'gallery/index.html'),
+        videos:   resolve(__dirname, 'videos/index.html'),
+        story:    resolve(__dirname, 'story/index.html'),
+        puzzle:   resolve(__dirname, 'puzzle/index.html'),
+        carousel: resolve(__dirname, 'carousel/index.html'),
       },
     },
   },

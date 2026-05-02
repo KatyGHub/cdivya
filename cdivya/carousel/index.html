@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Words for You — cdivya</title>
+    <meta name="theme-color" content="#080808" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="cursor-dot"  id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <nav class="cr-nav" id="nav">
+      <a href="/" class="nav-logo"><span class="logo-accent">c</span>divya<span class="logo-dot">.</span></a>
+      <a href="/" class="nav-back">← Back</a>
+    </nav>
+
+    <!-- Loading screen -->
+    <div class="cr-loading" id="crLoading">
+      <div class="cr-loading-inner">
+        <div class="cr-load-bar"><div class="cr-load-fill" id="crLoadFill"></div></div>
+        <p class="cr-load-label">Loading the love…</p>
+      </div>
+    </div>
+
+    <!-- Carousel -->
+    <div class="carousel" id="carousel" aria-label="Carousel of words for Divya">
+
+      <!-- Slides container -->
+      <div class="cr-slides" id="crSlides"></div>
+
+      <!-- Ambient background (blurred duplicate of current image) -->
+      <div class="cr-ambient" id="crAmbient"></div>
+
+      <!-- Bottom bar -->
+      <div class="cr-bar">
+        <div class="cr-counter">
+          <span class="cr-cur" id="crCur">01</span>
+          <span class="cr-sep">/</span>
+          <span class="cr-tot" id="crTot">—</span>
+        </div>
+
+        <!-- Progress dots -->
+        <div class="cr-dots" id="crDots" role="tablist" aria-label="Slides"></div>
+
+        <!-- Controls -->
+        <div class="cr-controls">
+          <button class="cr-btn" id="crPrev" aria-label="Previous">←</button>
+          <button class="cr-btn cr-play" id="crPlay" aria-label="Pause autoplay">⏸</button>
+          <button class="cr-btn" id="crNext" aria-label="Next">→</button>
+        </div>
+      </div>
+
+      <!-- Progress strip -->
+      <div class="cr-progress-strip" id="crProgressStrip">
+        <div class="cr-progress-fill" id="crProgressFill"></div>
+      </div>
+
+    </div>
+
+    <script type="module" src="/src/carousel-main.js"></script>
+  </body>
+</html>
