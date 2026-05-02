@@ -206,7 +206,11 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
     const w   = container.clientWidth;
 
     dragVelocity *= 0.92;
-    if (dragVelocity !== 0) speedFactor = Math.sign(dragVelocity);
+    // Use magnitude so right-drag feels as responsive as left-drag
+    if (Math.abs(dragVelocity) > 0.005) {
+      speedFactor = dragVelocity * 8;
+      speedFactor = Math.max(-5, Math.min(5, speedFactor));
+    }
     if (Math.random() < 0.01) cleanup();
 
     for (const sprites of layers) {
