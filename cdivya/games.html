@@ -25,8 +25,7 @@
       <div class="container">
         <p class="s-label">Brain Damage Zone</p>
         <h1 class="games-hero-title">
-          Three games.<br />
-          <em>Zero mercy.</em>
+          Three games.<br /><em>Zero mercy.</em>
         </h1>
         <p class="games-hero-sub">Divya breezed through all three. How long will you last?</p>
       </div>
@@ -42,7 +41,7 @@
             <div class="gc-number">01</div>
             <div class="gc-icon">🧩</div>
             <h2 class="gc-name">The Slide</h2>
-            <p class="gc-desc">Classic 15-tile sliding puzzle. Divya's record: 47 moves. Your record: still zero.</p>
+            <p class="gc-desc">Classic 15-tile sliding puzzle. But make it art. Divya's record: 47 moves. Your record: still zero.</p>
             <button class="btn btn-primary gc-btn">Play Now</button>
             <div class="gc-tag">Unlocked</div>
           </div>
@@ -57,12 +56,12 @@
             <div class="gc-tag">Unlocked</div>
           </div>
 
-          <div class="game-card gc-cipher" id="openCipherCard">
+          <div class="game-card gc-jigsaw" id="openJigsawCard">
             <div class="gc-glow"></div>
             <div class="gc-number">03</div>
-            <div class="gc-icon">🔐</div>
-            <h2 class="gc-name">The Cipher</h2>
-            <p class="gc-desc">A secret message, scrambled. Every letter maps to another. Decode it. New cipher every session.</p>
+            <div class="gc-icon">🖼️</div>
+            <h2 class="gc-name">The Jigsaw</h2>
+            <p class="gc-desc">Real bezier-edge pieces. Drag. Snap. Connect. Uses Divya's actual photos. Immersive. Beautiful. Ruthless.</p>
             <button class="btn btn-primary gc-btn">Play Now</button>
             <div class="gc-tag">Unlocked</div>
           </div>
@@ -81,7 +80,19 @@
           <h2 class="modal-title">The Slide</h2>
           <p class="modal-desc" id="puzzleTaunt">Divya's record: 47 moves. Yours: ∞. Arrow keys work too.</p>
         </div>
+
+        <!-- Artwork preview strip -->
+        <div class="puzzle-meta">
+          <div class="puzzle-preview" id="puzzlePreview" title="Target image"></div>
+          <div class="puzzle-meta-text">
+            <span class="p-art-label">Now playing:</span>
+            <span class="p-art-name" id="artName">Divya's Palette</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="artBtn">Next artwork →</button>
+        </div>
+
         <div class="puzzle-board" id="puzzleBoard" role="grid"></div>
+
         <div class="puzzle-footer">
           <div class="p-stat">Moves <span class="p-val" id="moveCount">0</span></div>
           <div class="p-stat">Time <span class="p-val" id="timerDisplay">0:00</span></div>
@@ -128,30 +139,41 @@
       </div>
     </div>
 
-    <!-- ═══ CIPHER MODAL ═══ -->
-    <div class="modal" id="cipherModal" role="dialog" aria-modal="true" aria-hidden="true">
-      <div class="modal-overlay" id="cipherOverlay"></div>
-      <div class="modal-box modal-box--wide">
-        <button class="modal-close" id="cipherClose">✕</button>
-        <div class="modal-header">
-          <span class="modal-emoji">🔐</span>
-          <h2 class="modal-title">The Cipher</h2>
-          <p class="modal-desc">Each letter maps to another. Crack the code. New cipher every session.</p>
-        </div>
-
-        <div class="cipher-message" id="cipherMessage" aria-label="Encoded message"></div>
-
-        <div class="cipher-alphabet" id="cipherAlphabet" aria-label="Alphabet key"></div>
-
-        <div class="cipher-controls">
-          <button class="btn btn-ghost btn-sm" id="cipherHint">Reveal a letter 🔍</button>
-          <button class="btn btn-ghost btn-sm" id="cipherReset">Reset</button>
-          <div class="cipher-progress">
-            Decoded: <span class="p-val" id="cipherProgress">0</span> / <span id="cipherTotal">?</span>
+    <!-- ═══ JIGSAW MODAL ═══ -->
+    <div class="modal" id="jigsawModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="jigsawOverlay"></div>
+      <div class="modal-box modal-box--jigsaw">
+        <button class="modal-close" id="jigsawClose">✕</button>
+        <div class="jigsaw-header">
+          <div>
+            <h2 class="modal-title" style="margin:0">The Jigsaw</h2>
+            <p class="jigsaw-progress-label">Pieces placed: <span id="jzProgress">0 / 0</span></p>
+          </div>
+          <div class="jigsaw-controls">
+            <select class="jz-select" id="jzPieces">
+              <option value="16">16 pieces</option>
+              <option value="25" selected>25 pieces</option>
+              <option value="36">36 pieces</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" id="jzShuffle">New image</button>
+            <button class="btn btn-ghost btn-sm" id="jzRestart">Restart</button>
           </div>
         </div>
-
-        <p class="cipher-status" id="cipherStatus"></p>
+        <div class="jigsaw-canvas-wrap" id="jigsawCanvas"></div>
+        <div class="jz-loading" id="jzLoading">
+          <div class="jz-loading-dot"></div>
+          <div class="jz-loading-dot"></div>
+          <div class="jz-loading-dot"></div>
+          <p>Loading pieces…</p>
+        </div>
+        <div class="jz-solved-banner" id="jzSolved">
+          <span class="jz-solved-emoji">🎉</span>
+          <p class="jz-solved-text">Puzzle complete!</p>
+          <div class="jz-solved-actions">
+            <button class="btn btn-primary btn-sm" id="jzPlayAgain">Play again</button>
+            <button class="btn btn-ghost btn-sm" id="jzNewImg">New image</button>
+          </div>
+        </div>
       </div>
     </div>
 

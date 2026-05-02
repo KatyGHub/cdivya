@@ -3,14 +3,14 @@ import { initCursor }    from './cursor.js';
 import { initNav }       from './nav.js';
 import { initPuzzle }    from './puzzle-v2.js';
 import { initCrossword } from './crossword.js';
-import { initCipher }    from './cipher.js';
+import { initJigsawModal } from './jigsaw-modal.js';
 
 async function bootstrap() {
   initCursor();
   initNav();
   initPuzzle();
   initCrossword();
-  initCipher();
+  initJigsawModal();
 }
 
 document.readyState === 'loading'
