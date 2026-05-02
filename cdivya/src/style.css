@@ -421,7 +421,7 @@ body.home { overflow:hidden; height:100dvh; }
 .gc-jigsaw .gc-icon { animation-delay:.8s; }
 
 .modal-box--jigsaw {
-  max-width:920px; width:96vw;
+  max-width:1000px; width:97vw;
   padding:1rem 1.25rem 1.25rem;
   position:relative; display:flex; flex-direction:column; gap:.75rem;
 }
@@ -454,7 +454,7 @@ body.home { overflow:hidden; height:100dvh; }
 
 /* Canvas area */
 .jigsaw-canvas-wrap {
-  width:100%; height:clamp(280px, 54vh, 510px);
+  width:100%; height:clamp(360px, 66vh, 640px);
   border-radius:10px; overflow:hidden; background:var(--surface);
   border:1px solid var(--border); position:relative;
 }

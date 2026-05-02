@@ -224,7 +224,7 @@ export class JigsawPuzzle {
     // Clip to piece shape, draw image
     ctx.save();
     ctx.clip(piece.path);
-    ctx.shadowColor = 'transparent';  // no shadow inside clip
+    ctx.shadowColor = 'transparent';
 
     const sw = this.image.naturalWidth  / this.cols;
     const sh2= this.image.naturalHeight / this.rows;
@@ -233,32 +233,16 @@ export class JigsawPuzzle {
       0, 0, this.pw, this.ph
     );
 
-    // ── Bevel (inner light ridge) ─────────────────────────────────────────
-    // Light highlight — top/left feel
-    ctx.strokeStyle = 'rgba(255,255,255,0.38)';
-    ctx.lineWidth   = BEVEL_W * 2;   // outer half clipped away → inner half only
-    ctx.lineJoin    = 'round';
-    ctx.lineCap     = 'round';
-    ctx.stroke(piece.path);
-
-    // Darker under-shadow for depth
-    ctx.strokeStyle = 'rgba(0,0,0,0.28)';
-    ctx.lineWidth   = BEVEL_W * 2 + 2;
-    ctx.stroke(piece.path);
-
-    // Re-draw light on top so it reads as a raised ridge
-    ctx.strokeStyle = 'rgba(255,255,255,0.30)';
-    ctx.lineWidth   = BEVEL_W;
-    ctx.stroke(piece.path);
-
     ctx.restore(); // end clip
 
-    // ── Outer edge ──────────────────────────────────────────────────────────
+    // Outer edge — only when held (mint glow), invisible otherwise
     ctx.shadowColor = 'transparent';
-    ctx.strokeStyle = held ? 'rgba(0,255,189,0.7)' : 'rgba(0,0,0,0.75)';
-    ctx.lineWidth   = held ? 2 : 1.2;
-    ctx.lineJoin    = 'round';
-    ctx.stroke(piece.path);
+    if (held) {
+      ctx.strokeStyle = 'rgba(0,255,189,0.6)';
+      ctx.lineWidth   = 1.5;
+      ctx.lineJoin    = 'round';
+      ctx.stroke(piece.path);
+    }
 
     ctx.restore();
   }
