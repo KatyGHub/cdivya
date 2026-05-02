@@ -16,6 +16,7 @@ export default defineConfig({
         gallery: resolve(__dirname, 'gallery.html'),
         videos:  resolve(__dirname, 'videos.html'),
         story:   resolve(__dirname, 'story.html'),
+        puzzle:  resolve(__dirname, 'puzzle.html'),
       },
     },
   },
