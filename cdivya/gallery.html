@@ -7,31 +7,205 @@
     <meta name="theme-color" content="#080808" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+    <style>
+      /* Gallery page has its own self-contained styles — no scroll, full immersion */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        height: 100%; width: 100%;
+        background: #080808;
+        color: #ebebeb;
+        font-family: 'DM Sans', system-ui, sans-serif;
+        overflow: hidden;
+        cursor: none;
+      }
+
+      /* ── Grain ── */
+      .grain {
+        position: fixed; inset: 0; z-index: 99; pointer-events: none; opacity: .032;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 300px;
+      }
+
+      /* ── Image protection shield — sits above canvas, blocks right-click ── */
+      #shield {
+        position: fixed; inset: 0; z-index: 5;
+        pointer-events: all;
+        /* Allows click-through for drag, but blocks context menu */
+      }
+
+      /* ── Three.js canvas container ── */
+      #container {
+        position: fixed; inset: 0; overflow: hidden; z-index: 1;
+        cursor: grab;
+      }
+      #container:active { cursor: grabbing; }
+      #container canvas { display: block; }
+
+      /* ── Custom cursor ── */
+      .cursor-dot {
+        position: fixed; width: 7px; height: 7px; background: #FF2D55; border-radius: 50%;
+        pointer-events: none; z-index: 9998; transform: translate(-50%, -50%);
+        transition: width .15s, height .15s, background .15s;
+      }
+      .cursor-ring {
+        position: fixed; width: 38px; height: 38px;
+        border: 1.5px solid rgba(255,45,85,.45); border-radius: 50%;
+        pointer-events: none; z-index: 9997; transform: translate(-50%,-50%);
+        transition: width .2s, height .2s, border-color .2s;
+      }
+
+      /* ── Nav ── */
+      .nav {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1.5rem 2.5rem;
+        background: linear-gradient(to bottom, rgba(8,8,8,.9), transparent);
+        pointer-events: none;
+      }
+      .nav a { pointer-events: all; }
+      .nav-logo {
+        font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem;
+        letter-spacing: -.02em; text-decoration: none; color: #ebebeb;
+        transition: opacity .25s;
+      }
+      .nav-logo:hover { opacity: .7; }
+      .logo-accent {
+        background: linear-gradient(135deg,#FF2D55,#BF5FFF);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+      .logo-dot { color: #FF2D55; }
+      .nav-back {
+        font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 600;
+        color: rgba(235,235,235,.55); text-decoration: none; transition: color .25s;
+      }
+      .nav-back:hover { color: #ebebeb; }
+
+      /* ── Loading screen ── */
+      #loading {
+        position: fixed; inset: 0; z-index: 300;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 1.25rem; background: #080808;
+        transition: opacity .6s ease, visibility .6s;
+      }
+      #loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+      .loading-logo {
+        font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem;
+        background: linear-gradient(135deg,#FF2D55,#BF5FFF);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+      .loading-bar-wrap {
+        width: 180px; height: 2px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden;
+      }
+      .loading-bar {
+        height: 100%; width: 0%; background: linear-gradient(90deg,#FF2D55,#BF5FFF);
+        border-radius: 2px; transition: width .3s ease;
+      }
+      .loading-text {
+        font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 600;
+        letter-spacing: .12em; text-transform: uppercase; color: rgba(235,235,235,.35);
+      }
+
+      /* ── Empty state (no images yet) ── */
+      #empty {
+        position: fixed; inset: 0; z-index: 300;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        gap: 1rem; text-align: center; padding: 2rem;
+      }
+      #empty.show { display: flex; }
+      .empty-icon { font-size: 3.5rem; }
+      .empty-title {
+        font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
+        letter-spacing: -.02em;
+      }
+      .empty-title em {
+        font-style: italic;
+        background: linear-gradient(135deg,#FF2D55,#BF5FFF);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+      .empty-sub { color: rgba(235,235,235,.45); font-size: .95rem; max-width: 400px; line-height: 1.65; }
+
+      /* ── Hint bar (bottom left) ── */
+      #ui {
+        position: fixed; left: 1.25rem; bottom: 1.25rem; z-index: 200;
+        display: none; align-items: center; gap: .6rem;
+        background: rgba(0,0,0,.45); backdrop-filter: blur(12px);
+        padding: .55rem 1rem; border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.07);
+        font-size: .72rem; color: rgba(235,235,235,.5);
+        font-family: 'Syne', sans-serif; font-weight: 500; letter-spacing: .04em;
+        pointer-events: none; user-select: none;
+      }
+      #ui.show { display: flex; }
+      #ui .hint-icon { font-size: .9rem; }
+
+      /* ── Runaway buttons ── */
+      .runaway-btn {
+        position: fixed; z-index: 800;
+        padding: .6rem 1.2rem; font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700;
+        letter-spacing: .02em; border: none; border-radius: 999px; cursor: pointer;
+        user-select: none; white-space: nowrap; opacity: 0;
+        transition: box-shadow .3s;
+      }
+      .runaway-btn          { background: linear-gradient(135deg,#FF2D55,#BF5FFF); color:#fff; box-shadow:0 0 18px rgba(255,45,85,.35); }
+      .runaway-btn.btn--alt { background: linear-gradient(135deg,#FF2D55,#FF8C42); color:#fff; box-shadow:0 0 18px rgba(255,140,66,.35); }
+      .runaway-btn.fleeing  { animation: btnShake .4s cubic-bezier(.34,1.56,.64,1) both; }
+      @keyframes btnShake {
+        0%{transform:scale(1) rotate(0);}25%{transform:scale(1.12) rotate(-6deg);}
+        50%{transform:scale(1.06) rotate(5deg);}75%{transform:scale(1.09) rotate(-3deg);}
+        100%{transform:scale(1) rotate(0);}
+      }
+
+      @media (max-width: 768px) {
+        .cursor-dot, .cursor-ring { display: none; }
+        body { cursor: auto; }
+        #container { cursor: grab; }
+        .nav { padding: 1.25rem 1.5rem; }
+      }
+    </style>
   </head>
   <body>
+
     <div class="grain" aria-hidden="true"></div>
     <div class="cursor-dot"  id="cursorDot"></div>
     <div class="cursor-ring" id="cursorRing"></div>
+
+    <!-- Image protection shield -->
+    <div id="shield" aria-hidden="true"></div>
+
     <button class="runaway-btn"          id="btnNishi">Call Nishi 😈</button>
     <button class="runaway-btn btn--alt" id="btnJeffrey">Call Jeffrey 🏃‍♂️</button>
 
-    <nav class="nav" id="nav">
+    <nav class="nav">
       <a href="/" class="nav-logo"><span class="logo-accent">c</span>divya<span class="logo-dot">.</span></a>
       <a href="/" class="nav-back">← Back</a>
     </nav>
 
-    <section class="placeholder-hero">
-      <div class="container">
-        <p class="s-label">Gallery</p>
-        <h1 class="placeholder-title">47,000 photos.<br /><em>Coming soon.</em></h1>
-        <p class="placeholder-sub">
-          We're building this. Divya is somewhere right now taking 40 more photos before we're done.
-        </p>
-        <a href="/" class="btn btn-ghost">← Back to home</a>
-      </div>
-    </section>
+    <!-- Three.js render target -->
+    <div id="container"></div>
 
-    <script type="module" src="/src/main.js"></script>
+    <!-- Loading -->
+    <div id="loading">
+      <div class="loading-logo">cdivya.</div>
+      <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+      <div class="loading-text" id="loadingText">Loading her world…</div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty">
+      <div class="empty-icon">📸</div>
+      <div class="empty-title">47,000 photos.<br /><em>Coming soon.</em></div>
+      <p class="empty-sub">We're building this. Divya is somewhere right now taking 40 more photos before we're done.</p>
+    </div>
+
+    <!-- Hint bar -->
+    <div id="ui">
+      <span class="hint-icon">⟵</span>
+      drag to explore · scroll to speed up
+      <span class="hint-icon">⟶</span>
+    </div>
+
+    <script type="module" src="/src/gallery-main.js"></script>
   </body>
 </html>
