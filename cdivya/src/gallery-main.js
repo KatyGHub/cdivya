@@ -1,6 +1,5 @@
 import { fetchGalleryImages, isConfigured } from './supabase-images.js';
 import { initGallery }                       from './gallery-three.js';
-import { initRunawayButtons }                from './runaway.js';
 import { initCursor }                        from './cursor.js';
 
 function showError(msg) {
@@ -19,25 +18,8 @@ function showError(msg) {
 async function bootstrap() {
   initCursor();
 
-  try {
-    const { default: anime } = await import('animejs');
-    initRunawayButtons(anime);
-  } catch {
-    document.querySelectorAll('.runaway-btn').forEach(btn => {
-      const mv = () => {
-        btn.style.transition = 'left .5s cubic-bezier(.34,1.56,.64,1),top .5s cubic-bezier(.34,1.56,.64,1)';
-        btn.style.left = `${Math.random()*(window.innerWidth-150)+40}px`;
-        btn.style.top  = `${Math.random()*(window.innerHeight-60)+40}px`;
-      };
-      btn.style.left = `${Math.random()*(window.innerWidth-150)+40}px`;
-      btn.style.top  = `${Math.random()*(window.innerHeight-60)+40}px`;
-      btn.style.opacity = '1';
-      ['mouseover','touchstart','click'].forEach(ev => btn.addEventListener(ev, mv));
-    });
-  }
-
   if (!isConfigured) {
-    showError('Supabase env vars are not set. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel → Environment Variables, then redeploy.');
+    showError('Supabase env vars not set. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel → Environment Variables, then redeploy.');
     return;
   }
 
@@ -50,11 +32,11 @@ async function bootstrap() {
   }
 
   if (!imageUrls.length) {
-    showError('Images were found but URLs could not be generated. If your bucket is PRIVATE, go to Supabase → Storage → Policies and add a policy allowing SELECT on your bucket for the anon role.');
+    showError('No images found. Check your bucket name and RLS policies in Supabase.');
     return;
   }
 
-  initGallery({ imageUrls });
+  await initGallery({ imageUrls });
 }
 
 document.readyState === 'loading'
