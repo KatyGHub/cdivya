@@ -1,18 +1,24 @@
-/**
- * gallery-main.js
- * Fetches images from Supabase (signed URLs) then hands them to the Three.js gallery.
- * If Supabase isn't configured yet, shows the empty/coming-soon state.
- */
-
 import { fetchGalleryImages, isConfigured } from './supabase-images.js';
 import { initGallery }                       from './gallery-three.js';
 import { initRunawayButtons }                from './runaway.js';
 import { initCursor }                        from './cursor.js';
 
+function showError(msg) {
+  const el = document.getElementById('empty');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="empty-icon">⚠️</div>
+    <div class="empty-title">Couldn't load photos</div>
+    <p class="empty-sub" style="color:rgba(255,100,100,.7);font-size:.82rem;max-width:480px;">${msg}</p>
+    <p class="empty-sub" style="margin-top:.5rem;">Check browser console (F12) for details.</p>
+  `;
+  el.classList.add('show');
+  document.getElementById('loading')?.classList.add('hidden');
+}
+
 async function bootstrap() {
   initCursor();
 
-  // ── Runaway buttons ───────────────────────────
   try {
     const { default: anime } = await import('animejs');
     initRunawayButtons(anime);
@@ -30,30 +36,25 @@ async function bootstrap() {
     });
   }
 
-  // ── Fetch images ───────────────────────────────
-  let imageUrls = [];
-
-  if (isConfigured) {
-    try {
-      imageUrls = await fetchGalleryImages();
-    } catch (err) {
-      console.warn('[gallery] Could not load images:', err);
-    }
+  if (!isConfigured) {
+    showError('Supabase env vars are not set. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel → Environment Variables, then redeploy.');
+    return;
   }
 
-  // ── Launch Three.js gallery ────────────────────
-  initGallery({
-    imageUrls,
-    onProgress: (pct) => {
-      // loadingBar is updated inside gallery-three.js directly
-    },
-    onReady: () => {
-      console.log('[gallery] Ready');
-    },
-    onEmpty: () => {
-      // Empty state shown by gallery-three.js
-    },
-  });
+  let imageUrls = [];
+  try {
+    imageUrls = await fetchGalleryImages();
+  } catch (err) {
+    showError(`Supabase error: ${err.message}`);
+    return;
+  }
+
+  if (!imageUrls.length) {
+    showError('Images were found but URLs could not be generated. If your bucket is PRIVATE, go to Supabase → Storage → Policies and add a policy allowing SELECT on your bucket for the anon role.');
+    return;
+  }
+
+  initGallery({ imageUrls });
 }
 
 document.readyState === 'loading'
