@@ -28,13 +28,6 @@
         background-size: 300px;
       }
 
-      /* ── Image protection shield — sits above canvas, blocks right-click ── */
-      #shield {
-        position: fixed; inset: 0; z-index: 5;
-        pointer-events: all;
-        /* Allows click-through for drag, but blocks context menu */
-      }
-
       /* ── Three.js canvas container ── */
       #container {
         position: fixed; inset: 0; overflow: hidden; z-index: 1;
@@ -171,8 +164,6 @@
     <div class="cursor-dot"  id="cursorDot"></div>
     <div class="cursor-ring" id="cursorRing"></div>
 
-    <!-- Image protection shield -->
-    <div id="shield" aria-hidden="true"></div>
 
     <button class="runaway-btn btn--alt" id="btnJeffrey">Call Jeffrey 🏃‍♂️</button>
 

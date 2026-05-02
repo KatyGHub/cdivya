@@ -236,27 +236,53 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
   animate();
   onReady?.();
 
-  // ── Interaction ──────────────────────────────────
+  // ── Interaction — mirrored from original CodePen logic ──
   const getX = e => e.touches ? e.touches[0].clientX : e.clientX;
 
-  container.addEventListener('mousedown', e => { dragActive = true; lastX = getX(e); });
+  container.addEventListener('mousedown', e => {
+    dragActive = true;
+    lastX = getX(e);
+  });
+
   container.addEventListener('mousemove', e => {
     if (!dragActive) return;
-    const dx = getX(e) - lastX; lastX = getX(e); dragVelocity = dx * 0.022;
+    const x = getX(e);
+    const dx = x - lastX;
+    lastX = x;
+    dragVelocity = dx * 0.02;
   });
+
   window.addEventListener('mouseup', () => { dragActive = false; });
-  container.addEventListener('touchstart', e => { dragActive = true; lastX = getX(e); }, { passive: true });
+
+  container.addEventListener('touchstart', e => {
+    dragActive = true;
+    lastX = getX(e);
+  }, { passive: true });
+
   container.addEventListener('touchmove', e => {
     if (!dragActive) return;
-    const dx = getX(e) - lastX; lastX = getX(e); dragVelocity = dx * 0.022;
+    const x = getX(e);
+    const dx = x - lastX;
+    lastX = x;
+    dragVelocity = dx * 0.02;
   }, { passive: true });
+
   window.addEventListener('touchend', () => { dragActive = false; });
+
+  // Wheel: accelerates in direction of scroll, caps at speed 5
   container.addEventListener('wheel', e => {
     e.preventDefault();
-    const dir = Math.sign(e.deltaY);
-    speedFactor = dir * Math.min(5, Math.abs(speedFactor) + 0.8);
-    dragVelocity = 0; cleanup();
+    const wheelDelta = Math.sign(e.deltaY);
+    const direction  = wheelDelta > 0 ? 1 : -1;
+    speedFactor = direction * (Math.abs(speedFactor) + 0.8);
+    const sign = Math.sign(speedFactor);
+    speedFactor = sign * Math.min(5, Math.abs(speedFactor));
+    dragVelocity = 0;
+    cleanup();
   }, { passive: false });
+
+  // Belt-and-braces: also catch wheel on document so it never bubbles past
+  document.addEventListener('wheel', e => e.preventDefault(), { passive: false });
 
   // ── Protection ───────────────────────────────────
   document.addEventListener('contextmenu', e => e.preventDefault());
