@@ -208,37 +208,52 @@ export class JigsawPuzzle {
     if (!this.image) return;
     const ctx = this.ctx;
     const held = this.drag?.group === piece.group;
+    const shd = held ? SHADOW_HELD : SHADOW_NORM;
 
+    // ── Pass 1: Shadow ─────────────────────────────────────────────────────
+    // A near-invisible fill in the piece shape triggers the drop shadow.
+    // Nothing else to draw — the shadow bleeds into the background naturally.
     ctx.save();
     ctx.translate(piece.x, piece.y);
+    ctx.shadowBlur    = shd.blur;
+    ctx.shadowOffsetX = shd.ox;
+    ctx.shadowOffsetY = shd.oy;
+    ctx.shadowColor   = shd.col;
+    ctx.fillStyle     = 'rgba(0,0,0,0.01)';
+    ctx.fill(piece.path);
+    ctx.restore();
 
-    // Drop shadow (applied before clip so it renders outside the shape)
-    const sh = held ? SHADOW_HELD : SHADOW_NORM;
-    ctx.shadowBlur    = sh.blur;
-    ctx.shadowOffsetX = sh.ox;
-    ctx.shadowOffsetY = sh.oy;
-    ctx.shadowColor   = sh.col;
-
-    // Clip to piece shape and draw image
+    // ── Pass 2: Image (clipped, tab areas filled with real image pixels) ───
+    // Problem in v1: drawImage only painted the base pw×ph rect, leaving the
+    // tab protrusions empty (black). The white border stroke on those empty
+    // tabs created the confusing cross shapes in the background.
+    // Fix: expand src+dst rects by TAB amount so image pixels flow into tabs.
     ctx.save();
+    ctx.translate(piece.x, piece.y);
     ctx.clip(piece.path);
-    ctx.shadowColor = 'transparent';
 
-    const sw  = this.image.naturalWidth  / this.cols;
-    const sh2 = this.image.naturalHeight / this.rows;
-    ctx.drawImage(this.image,
-      piece.col * sw, piece.row * sh2, sw, sh2,
-      0, 0, this.pw, this.ph
+    const iw  = this.image.naturalWidth;
+    const ih  = this.image.naturalHeight;
+    const sw  = iw / this.cols;
+    const sh2 = ih / this.rows;
+    const pad = TAB * 1.25;  // slightly beyond max tab protrusion
+
+    ctx.drawImage(
+      this.image,
+      piece.col * sw - pad * sw,   piece.row * sh2 - pad * sh2,
+      sw  * (1 + pad * 2),         sh2 * (1 + pad * 2),
+      -pad * this.pw,              -pad * this.ph,
+      this.pw * (1 + pad * 2),     this.ph * (1 + pad * 2)
     );
 
-    // Subtle inner edge — makes individual pieces visible at all times.
-    // Drawn inside the clip so it only covers the piece's own surface.
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.lineWidth   = 3;
-    ctx.lineJoin    = 'round';
-    ctx.stroke(piece.path);
-
-    ctx.restore(); // end clip
+    // Only show an outline when actively held — inside clip so it follows
+    // the actual piece silhouette, not the bounding box
+    if (held) {
+      ctx.strokeStyle = 'rgba(0,255,189,0.8)';
+      ctx.lineWidth   = 2.5;
+      ctx.lineJoin    = 'round';
+      ctx.stroke(piece.path);
+    }
 
     ctx.restore();
   }
