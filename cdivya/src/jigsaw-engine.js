@@ -5,10 +5,9 @@
 
 const TAB  = 0.28;   // tab height as fraction of edge length
 const NECK = 0.13;   // neck half-width fraction
-const SNAP = 22;     // snap trigger distance (px)
-const BEVEL_W = 7;   // bevel stroke width (inner half shows after clip)
-const SHADOW_NORM = { blur: 10, ox: 4, oy: 4, col: 'rgba(0,0,0,0.55)' };
-const SHADOW_HELD = { blur: 28, ox: 0, oy: 0, col: 'rgba(0,255,189,0.35)' };
+const SNAP = 26;     // snap trigger distance (px)
+const SHADOW_NORM = { blur: 12, ox: 3, oy: 3, col: 'rgba(0,0,0,0.7)' };
+const SHADOW_HELD = { blur: 32, ox: 0, oy: 0, col: 'rgba(0,255,189,0.45)' };
 
 // ── Geometry helpers ──────────────────────────────────────────────────────────
 
@@ -121,8 +120,8 @@ export class JigsawPuzzle {
     const ratio = this.image.naturalWidth / this.image.naturalHeight;
     this.rows = Math.max(2, Math.round(Math.sqrt(n / ratio)));
     this.cols = Math.max(2, Math.round(n / this.rows));
-    // Nominal piece size fills ~60% of viewport, preserving image aspect
-    const maxW = this.W * 0.62, maxH = this.H * 0.74;
+    // Nominal piece size fills ~82% of canvas, preserving image aspect
+    const maxW = this.W * 0.86, maxH = this.H * 0.88;
     const scaleByW = maxW / this.cols;
     const scaleByH = maxH / this.rows;
     const scale    = Math.min(scaleByW, scaleByH);
@@ -210,39 +209,36 @@ export class JigsawPuzzle {
     const ctx = this.ctx;
     const held = this.drag?.group === piece.group;
 
-    // ── Image ────────────────────────────────────────────────────────────────
     ctx.save();
     ctx.translate(piece.x, piece.y);
 
-    // Shadow (drop shadow — applied before clip)
+    // Drop shadow (applied before clip so it renders outside the shape)
     const sh = held ? SHADOW_HELD : SHADOW_NORM;
-    ctx.shadowBlur     = sh.blur;
-    ctx.shadowOffsetX  = sh.ox;
-    ctx.shadowOffsetY  = sh.oy;
-    ctx.shadowColor    = sh.col;
+    ctx.shadowBlur    = sh.blur;
+    ctx.shadowOffsetX = sh.ox;
+    ctx.shadowOffsetY = sh.oy;
+    ctx.shadowColor   = sh.col;
 
-    // Clip to piece shape, draw image
+    // Clip to piece shape and draw image
     ctx.save();
     ctx.clip(piece.path);
     ctx.shadowColor = 'transparent';
 
-    const sw = this.image.naturalWidth  / this.cols;
-    const sh2= this.image.naturalHeight / this.rows;
+    const sw  = this.image.naturalWidth  / this.cols;
+    const sh2 = this.image.naturalHeight / this.rows;
     ctx.drawImage(this.image,
       piece.col * sw, piece.row * sh2, sw, sh2,
       0, 0, this.pw, this.ph
     );
 
-    ctx.restore(); // end clip
+    // Subtle inner edge — makes individual pieces visible at all times.
+    // Drawn inside the clip so it only covers the piece's own surface.
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth   = 3;
+    ctx.lineJoin    = 'round';
+    ctx.stroke(piece.path);
 
-    // Outer edge — only when held (mint glow), invisible otherwise
-    ctx.shadowColor = 'transparent';
-    if (held) {
-      ctx.strokeStyle = 'rgba(0,255,189,0.6)';
-      ctx.lineWidth   = 1.5;
-      ctx.lineJoin    = 'round';
-      ctx.stroke(piece.path);
-    }
+    ctx.restore(); // end clip
 
     ctx.restore();
   }

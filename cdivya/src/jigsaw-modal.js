@@ -134,18 +134,16 @@ export function initJigsawModal() {
 
   // ── Score ────────────────────────────────────────────────────────────────────
   function calcScore(seconds, pieces) {
-    // Higher pieces = more points, faster = more points
-    const base = pieces * 100;
-    const timeBonus = Math.max(0, 3000 - seconds * 8);
+    const base = pieces * 120;
+    const timeBonus = Math.max(0, pieces * 60 - seconds * 4);
     return Math.round(base + timeBonus);
   }
 
   function calcStars(seconds, pieces) {
-    // Rough par times per piece count
-    const par = { 16: 90, 25: 180, 36: 300 };
-    const p = par[pieces] || 180;
-    if (seconds <= p * 0.6) return 3;
-    if (seconds <= p * 1.0) return 2;
+    // ~6 seconds per piece is a good par
+    const par = pieces * 6;
+    if (seconds <= par * 0.55) return 3;
+    if (seconds <= par * 1.0)  return 2;
     return 1;
   }
 
