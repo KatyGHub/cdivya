@@ -23,6 +23,11 @@ export function initJigsawModal() {
   const startBtn   = document.getElementById('jzStartBtn');
   const countdownEl= document.getElementById('jzCountdown');
 
+  // Reference thumbnail
+  const refEl      = document.getElementById('jzRef');
+  const refImg     = document.getElementById('jzRefImg');
+  const refToggle  = document.getElementById('jzRefToggle');
+
   // Loading
   const loadingEl  = document.getElementById('jzLoading');
 
@@ -160,11 +165,14 @@ export function initJigsawModal() {
     solvedEl.classList.remove('visible');
 
     const img = imgObjs[currentIdx % imgObjs.length];
-    // blob URLs from Supabase are same-origin — use directly
     previewImg.src = img.src;
+    // Set reference thumbnail src
+    if (refImg) refImg.src = img.src;
+    // Hide ref while preview overlay is showing
+    if (refEl) refEl.style.display = 'none';
 
-    startCountdown.count = 5;
-    if (countdownEl) countdownEl.textContent = '5';
+    startCountdown.count = 10;
+    if (countdownEl) countdownEl.textContent = '10';
     previewEl.style.display = 'flex';
     previewEl.classList.remove('fading');
 
@@ -184,7 +192,7 @@ export function initJigsawModal() {
 
   function startCountdown() {
     stopCountdown();
-    let n = 5;
+    let n = 10;
     countdownID = setInterval(() => {
       n--;
       if (countdownEl) countdownEl.textContent = n;
@@ -204,6 +212,12 @@ export function initJigsawModal() {
     puzzle.setImage(imgObjs[currentIdx % imgObjs.length]);
     puzzle.start(totalPieces);
     if (progressEl) progressEl.textContent = `0 / ${totalPieces}`;
+
+    // Show reference thumbnail (collapsed by default)
+    if (refEl) {
+      refEl.style.display = 'flex';
+      refEl.classList.remove('expanded');
+    }
 
     // Show personal best
     const pb = getBest(totalPieces);
@@ -293,6 +307,8 @@ export function initJigsawModal() {
   closeBtn?.addEventListener('click', closeModal);
   overlay?.addEventListener('click', closeModal);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  refToggle?.addEventListener('click', () => refEl?.classList.toggle('expanded'));
 
   startBtn?.addEventListener('click', () => { stopCountdown(); triggerStart(); });
   pieceSel?.addEventListener('change', doRestart);

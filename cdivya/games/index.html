@@ -174,11 +174,17 @@
         <!-- Canvas area -->
         <div class="jigsaw-canvas-wrap" id="jigsawCanvas">
 
+          <!-- Reference thumbnail — small, hideable -->
+          <div class="jz-ref" id="jzRef">
+            <button class="jz-ref-toggle" id="jzRefToggle" title="Toggle reference photo">👁 Reference</button>
+            <img class="jz-ref-img" id="jzRefImg" alt="Reference" />
+          </div>
+
           <!-- Preview overlay: shown before Start is clicked -->
           <div class="jz-preview-overlay" id="jzPreview">
             <img class="jz-preview-img" id="jzPreviewImg" alt="Puzzle image" />
             <div class="jz-preview-info">
-              <p class="jz-preview-label">Look at your photo. You have 5 seconds.</p>
+              <p class="jz-preview-label">Look at your photo. You have 10 seconds.</p>
               <div class="jz-countdown" id="jzCountdown">5</div>
               <button class="btn btn-primary" id="jzStartBtn">Start Puzzle ✦</button>
             </div>
