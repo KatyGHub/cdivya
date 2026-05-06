@@ -132,6 +132,7 @@ body.home { overflow:hidden; height:100dvh; }
 
 .dialer-screen {
   width: 390px; max-width: 96vw;
+  height: min(780px, 92vh);
   background: linear-gradient(175deg, #1a1a2e 0%, #0e0e15 100%);
   border-radius: 52px;
   overflow: hidden;
@@ -141,7 +142,6 @@ body.home { overflow:hidden; height:100dvh; }
   box-shadow: 0 40px 120px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.08);
   font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
   transition: transform .3s, opacity .3s;
-  min-height: 780px;
 }
 .dialer-screen.ending {
   animation: dialerShake .3s ease;
@@ -235,11 +235,12 @@ body.home { overflow:hidden; height:100dvh; }
   background: linear-gradient(175deg, #1a1a2e 0%, #0e0e15 100%);
   border-radius: 52px;
   display: flex; flex-direction: column;
-  padding: 60px 2rem 2rem;
-  gap: 1rem;
+  padding: 52px 1.5rem 1.5rem;
+  gap: .6rem;
   transform: translateY(100%);
   transition: transform .4s cubic-bezier(.32,1.04,.64,1);
   pointer-events: none;
+  overflow: hidden;
 }
 .dialer-numpad.visible {
   transform: translateY(0);
@@ -247,7 +248,7 @@ body.home { overflow:hidden; height:100dvh; }
 }
 .dnp-display-wrap {
   display: flex; align-items: center; justify-content: center;
-  position: relative; min-height: 48px;
+  position: relative; min-height: 44px; flex-shrink: 0;
 }
 .dnp-display {
   font-size: 2rem; font-weight: 300; color: #fff;
@@ -263,19 +264,19 @@ body.home { overflow:hidden; height:100dvh; }
 .dnp-back:hover { color: #fff; }
 .dnp-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: .65rem; flex: 1;
+  gap: .5rem; flex: 1; min-height: 0;
 }
 .dnp-key {
   background: rgba(255,255,255,.12);
   border: none; border-radius: 50%;
-  aspect-ratio: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   cursor: pointer; color: #fff; gap: 1px;
   transition: background .12s, transform .1s;
+  width: 100%; aspect-ratio: 1; max-height: 80px;
 }
 .dnp-key:active { background: rgba(255,255,255,.28); transform: scale(.92); }
-.dnp-num { font-size: 1.65rem; font-weight: 300; line-height: 1; }
-.dnp-sub { font-size: .5rem; font-weight: 600; letter-spacing: .12em; color: rgba(255,255,255,.6); }
+.dnp-num { font-size: 1.5rem; font-weight: 300; line-height: 1; }
+.dnp-sub { font-size: .48rem; font-weight: 600; letter-spacing: .12em; color: rgba(255,255,255,.6); }
 .dnp-hint {
   text-align: center; font-size: .68rem; color: rgba(255,255,255,.25);
   font-style: italic; opacity: 0; transition: opacity .4s;
@@ -299,11 +300,16 @@ body.home { overflow:hidden; height:100dvh; }
   box-shadow: 0 2px 12px rgba(255,59,48,.4);
 }
 
-/* Escape screen */
-.dialer-escaped {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  height: 100%; gap: 1.25rem; padding: 3rem 2.5rem; text-align: center;
+/* Escape overlay — permanent DOM node, shown via .active */
+.dialer-escaped-overlay {
+  display: none;
+  position: absolute; inset: 0; z-index: 20;
+  background: linear-gradient(175deg, #1a1a2e 0%, #0e0e15 100%);
+  border-radius: 52px;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 1.25rem; padding: 3rem 2.5rem; text-align: center;
 }
+.dialer-escaped-overlay.active { display: flex; }
 .esc-emoji { font-size: 4rem; }
 .esc-title {
   font-size: 1.6rem; font-weight: 700; color: #fff; letter-spacing: -.02em;

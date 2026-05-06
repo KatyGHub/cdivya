@@ -3,14 +3,13 @@
  * Jeffrey ↔ Nishi loop. Escape: open dialpad, type 11051999.
  */
 
-/* ─── Contact data ───────────────────────────────────────────────────────── */
 const CONTACTS = [
   { name: 'Jeffrey',  initials: 'J',  color: ['#34C759', '#1a7a2e'] },
   { name: 'Nishi',    initials: 'N',  color: ['#BF5FFF', '#6b1fa8'] },
 ];
 const ESCAPE_CODE = '11051999';
 
-/* ─── Audio engine ──────────────────────────────────────────────────────── */
+/* ─── Audio ──────────────────────────────────────────────────────────────── */
 let audioCtx = null;
 let ringNodes = [];
 
@@ -25,7 +24,6 @@ function stopAll() {
   ringNodes = [];
 }
 
-/* US ringback tone: 440 + 480 Hz, 2s on / 4s off */
 function startRingback() {
   stopAll();
   const ctx = getCtx();
@@ -33,9 +31,6 @@ function startRingback() {
   master.gain.value = 0.28;
   master.connect(ctx.destination);
   ringNodes.push(master);
-
-  const cycle = 6; // seconds per full cycle
-  const onTime = 2;
 
   function scheduleCycle(startAt) {
     if (!ringNodes.includes(master)) return;
@@ -45,15 +40,15 @@ function startRingback() {
       osc.frequency.value = freq;
       osc.connect(master);
       osc.start(startAt);
-      osc.stop(startAt + onTime);
+      osc.stop(startAt + 2);
       ringNodes.push(osc);
     });
-    setTimeout(() => scheduleCycle(ctx.currentTime + cycle), (startAt - ctx.currentTime + cycle) * 1000);
+    const delay = Math.max(0, (startAt - ctx.currentTime + 6) * 1000);
+    setTimeout(() => scheduleCycle(ctx.currentTime + 6), delay);
   }
   scheduleCycle(ctx.currentTime);
 }
 
-/* Short "call ended" descending beep */
 function playHangup() {
   stopAll();
   const ctx = getCtx();
@@ -62,15 +57,12 @@ function playHangup() {
   g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.18);
   g.connect(ctx.destination);
   const osc = ctx.createOscillator();
-  osc.type = 'sine';
   osc.frequency.setValueAtTime(480, ctx.currentTime);
   osc.frequency.linearRampToValueAtTime(320, ctx.currentTime + 0.18);
   osc.connect(g);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.2);
+  osc.start(); osc.stop(ctx.currentTime + 0.2);
 }
 
-/* DTMF tones for dialpad keypresses */
 const DTMF = {
   '1':[697,1209],'2':[697,1336],'3':[697,1477],
   '4':[770,1209],'5':[770,1336],'6':[770,1477],
@@ -88,17 +80,14 @@ function playDTMF(key) {
     const osc = ctx.createOscillator();
     osc.frequency.value = f;
     osc.connect(g);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.12);
+    osc.start(); osc.stop(ctx.currentTime + 0.12);
   });
 }
 
-/* Escape win jingle */
 function playWin() {
   stopAll();
   const ctx = getCtx();
-  const notes = [523, 659, 784, 1047];
-  notes.forEach((f, i) => {
+  [523, 659, 784, 1047].forEach((f, i) => {
     const g = ctx.createGain();
     g.gain.setValueAtTime(0, ctx.currentTime + i * 0.14);
     g.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.14 + 0.02);
@@ -113,19 +102,19 @@ function playWin() {
 }
 
 /* ─── State ─────────────────────────────────────────────────────────────── */
-let currentIdx = 0;
+let currentIdx  = 0;
 let callTimer   = null;
 let callSeconds = 0;
 let dialInput   = '';
 let numpadOpen  = false;
-let escaped     = false;
+let busy        = false;
 
-/* ─── DOM refs (resolved on init) ──────────────────────────────────────── */
+/* ─── DOM refs ───────────────────────────────────────────────────────────── */
 let overlay, screen, nameEl, initialsEl, avatarEl, statusEl,
     timerEl, keypadBtn, hangupBtn, numpadEl, numpadDisplay,
-    timeEl, numpadBack, callHintEl;
+    timeEl, numpadBack, callHintEl, escapedOverlay;
 
-/* ─── Helpers ───────────────────────────────────────────────────────────── */
+/* ─── Helpers ────────────────────────────────────────────────────────────── */
 function pad(n) { return String(n).padStart(2, '0'); }
 
 function updateClock() {
@@ -138,7 +127,7 @@ function setContact(idx) {
   nameEl.textContent     = c.name;
   initialsEl.textContent = c.initials;
   avatarEl.style.background = `radial-gradient(circle at 38% 38%, ${c.color[0]}, ${c.color[1]})`;
-  statusEl.textContent   = 'Calling…';
+  statusEl.textContent   = 'Calling\u2026';
   statusEl.classList.remove('ended');
   timerEl.textContent    = '';
   callSeconds = 0;
@@ -153,49 +142,56 @@ function startCallTimer() {
   }, 1000);
 }
 
-function openDialer() {
-  if (escaped) return;
-  currentIdx = 0;
-  dialInput  = '';
-  numpadOpen = false;
-  updateClock();
-  setContact(currentIdx);
-  overlay.classList.add('active');
+function resetUI() {
   screen.classList.remove('ending', 'show-numpad');
   numpadEl.classList.remove('visible');
+  numpadOpen  = false;
+  dialInput   = '';
   numpadDisplay.textContent = '';
-  callHintEl && (callHintEl.style.opacity = '0');
+  if (callHintEl) callHintEl.style.opacity = '0';
+  escapedOverlay.classList.remove('active');
+}
+
+function openDialer() {
+  currentIdx  = 0;
+  busy        = false;
+  updateClock();
+  resetUI();
+  setContact(currentIdx);
+  overlay.classList.add('active');
   startRingback();
-  // Show "ringing" for 3s then fake-connect (timer starts, sound loops)
   setTimeout(() => {
     if (!overlay.classList.contains('active')) return;
-    statusEl.textContent = 'Calling…'; // stays calling, it never picks up
     startCallTimer();
   }, 3000);
 }
 
 function doHangup() {
+  if (busy) return;
+  busy = true;
   playHangup();
   clearInterval(callTimer);
   stopAll();
   callSeconds = 0;
-  timerEl.textContent    = '';
-  statusEl.textContent   = 'Call ended';
+  timerEl.textContent  = '';
+  statusEl.textContent = 'Call ended';
   statusEl.classList.add('ended');
   screen.classList.add('ending');
 
+  numpadEl.classList.remove('visible');
+  screen.classList.remove('show-numpad');
+  numpadOpen = false;
+  dialInput  = '';
+  numpadDisplay.textContent = '';
+  if (callHintEl) callHintEl.style.opacity = '0';
+
   setTimeout(() => {
     if (!overlay.classList.contains('active')) return;
-    screen.classList.remove('ending', 'show-numpad');
-    numpadEl.classList.remove('visible');
-    numpadOpen = false;
-    numpadDisplay.textContent = '';
-    dialInput = '';
-
-    // Flip contact
+    screen.classList.remove('ending');
     currentIdx = (currentIdx + 1) % CONTACTS.length;
     setContact(currentIdx);
     startRingback();
+    busy = false;
     setTimeout(() => {
       if (!overlay.classList.contains('active')) return;
       startCallTimer();
@@ -204,31 +200,16 @@ function doHangup() {
 }
 
 function checkEscape() {
-  if (dialInput === ESCAPE_CODE) {
-    escaped = true;
+  // Keep last 8 chars for comparison
+  const toCheck = dialInput.length > ESCAPE_CODE.length
+    ? dialInput.slice(-ESCAPE_CODE.length)
+    : dialInput;
+  if (toCheck === ESCAPE_CODE) {
     stopAll();
     clearInterval(callTimer);
     playWin();
-    numpadDisplay.textContent = '';
-    statusEl.textContent = '';
-    statusEl.classList.remove('ended');
-
-    // Show fun escape screen
-    screen.innerHTML = `
-      <div class="dialer-escaped">
-        <div class="esc-emoji">🎉</div>
-        <div class="esc-title">You cracked the code!</div>
-        <div class="esc-msg">Neither of them actually knew about this.<br>It was a trap. Happy birthday, Divya. 🎂</div>
-        <button class="esc-close" id="escClose">Close</button>
-      </div>
-    `;
-    document.getElementById('escClose')?.addEventListener('click', () => {
-      overlay.classList.remove('active');
-      escaped = false;
-    });
-    return true;
+    escapedOverlay.classList.add('active');
   }
-  return false;
 }
 
 function toggleNumpad() {
@@ -237,41 +218,35 @@ function toggleNumpad() {
   screen.classList.toggle('show-numpad', numpadOpen);
   dialInput = '';
   numpadDisplay.textContent = '';
-  if (numpadOpen) {
-    callHintEl && setTimeout(() => { callHintEl.style.opacity = '1'; }, 600);
-  } else {
-    callHintEl && (callHintEl.style.opacity = '0');
-  }
+  if (callHintEl) callHintEl.style.opacity = numpadOpen ? '1' : '0';
 }
 
-/* ─── Init ──────────────────────────────────────────────────────────────── */
+/* ─── Init ────────────────────────────────────────────────────────────────── */
 export function initDialer() {
   const trigger = document.getElementById('clickbaitBtn');
-  overlay       = document.getElementById('dialerOverlay');
-  screen        = document.getElementById('dialerScreen');
-  nameEl        = document.getElementById('dialerName');
-  initialsEl    = document.getElementById('dialerInitials');
-  avatarEl      = document.getElementById('dialerAvatar');
-  statusEl      = document.getElementById('dialerStatus');
-  timerEl       = document.getElementById('dialerTimer');
-  keypadBtn     = document.getElementById('dialerKeypadBtn');
-  hangupBtn     = document.getElementById('dialerHangup');
-  numpadEl      = document.getElementById('dialerNumpad');
-  numpadDisplay = document.getElementById('dnpDisplay');
-  timeEl        = document.getElementById('dialerTime');
-  numpadBack    = document.getElementById('dnpBack');
-  callHintEl    = document.getElementById('dialerHint');
+  overlay        = document.getElementById('dialerOverlay');
+  screen         = document.getElementById('dialerScreen');
+  nameEl         = document.getElementById('dialerName');
+  initialsEl     = document.getElementById('dialerInitials');
+  avatarEl       = document.getElementById('dialerAvatar');
+  statusEl       = document.getElementById('dialerStatus');
+  timerEl        = document.getElementById('dialerTimer');
+  keypadBtn      = document.getElementById('dialerKeypadBtn');
+  hangupBtn      = document.getElementById('dialerHangup');
+  numpadEl       = document.getElementById('dialerNumpad');
+  numpadDisplay  = document.getElementById('dnpDisplay');
+  timeEl         = document.getElementById('dialerTime');
+  numpadBack     = document.getElementById('dnpBack');
+  callHintEl     = document.getElementById('dialerHint');
+  escapedOverlay = document.getElementById('dialerEscapedOverlay');
 
   if (!trigger || !overlay) return;
 
-  // Clock update
   updateClock();
   setInterval(updateClock, 10000);
 
   trigger.addEventListener('click', openDialer);
-
   hangupBtn.addEventListener('click', doHangup);
-
   keypadBtn.addEventListener('click', toggleNumpad);
 
   numpadBack?.addEventListener('click', () => {
@@ -279,23 +254,25 @@ export function initDialer() {
     numpadDisplay.textContent = dialInput;
   });
 
-  // Dialpad key presses
   document.querySelectorAll('.dnp-key').forEach(btn => {
     btn.addEventListener('click', () => {
       const k = btn.dataset.key;
       playDTMF(k);
       dialInput += k;
-      numpadDisplay.textContent = dialInput;
-      if (dialInput.length > 8) dialInput = dialInput.slice(1); // cap display
-      numpadDisplay.textContent = dialInput;
+      const display = dialInput.length > 10 ? dialInput.slice(-10) : dialInput;
+      numpadDisplay.textContent = display;
       checkEscape();
     });
   });
 
-  // Close on backdrop tap (outside screen)
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) {
-      // Don't allow easy escape — ignore clicks outside the phone
-    }
+  document.getElementById('escClose')?.addEventListener('click', () => {
+    overlay.classList.remove('active');
+    stopAll();
+    clearInterval(callTimer);
+    busy = false;
+    setTimeout(() => {
+      resetUI();
+      setContact(0);
+    }, 350);
   });
 }
