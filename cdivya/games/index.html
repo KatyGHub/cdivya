@@ -66,6 +66,26 @@
             <div class="gc-tag">Unlocked</div>
           </div>
 
+          <div class="game-card gc-wordle" id="openWordleCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">04</div>
+            <div class="gc-icon">🔡</div>
+            <h2 class="gc-name">DIVYADLE</h2>
+            <p class="gc-desc">Every secret word is pulled from your world — design, light, craft, color. Six guesses. Daily word. You know the vocabulary. That's what makes it addictive.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag gc-tag--new">New ✦</div>
+          </div>
+
+          <div class="game-card gc-math" id="openMathCard">
+            <div class="gc-glow"></div>
+            <div class="gc-number">05</div>
+            <div class="gc-icon">🧮</div>
+            <h2 class="gc-name">Make 24</h2>
+            <p class="gc-desc">Four numbers. Any operations. Sixty seconds. Combine them all to reach exactly 24. Sounds easy. It isn't. You will try again.</p>
+            <button class="btn btn-primary gc-btn">Play Now</button>
+            <div class="gc-tag gc-tag--new">New ✦</div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -224,6 +244,24 @@
     </div>
 
     <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+    <!-- ═══ WORDLE MODAL ═══ -->
+    <div class="modal" id="wordleModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="wordleOverlay"></div>
+      <div class="modal-box modal-box--wide">
+        <button class="modal-close" id="wordleClose">✕</button>
+        <div id="wordleContent"></div>
+      </div>
+    </div>
+
+    <!-- ═══ MATH MODAL ═══ -->
+    <div class="modal" id="mathModal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-overlay" id="mathOverlay"></div>
+      <div class="modal-box modal-box--wide">
+        <button class="modal-close" id="mathClose">✕</button>
+        <div id="mathContent"></div>
+      </div>
+    </div>
 
     <script type="module" src="/src/games-main.js"></script>
   </body>
