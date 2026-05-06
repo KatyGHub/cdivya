@@ -16,9 +16,116 @@
     <div class="cursor-dot"  id="cursorDot"></div>
     <div class="cursor-ring" id="cursorRing"></div>
 
-    <!-- Runaway buttons — stationary until hovered -->
-    <button class="runaway-btn"          id="btnNishi">Call Nishi 😈</button>
-    <button class="runaway-btn btn--alt" id="btnJeffrey">Call Jeffrey 🏃‍♂️</button>
+    <!-- Clickbait button -->
+    <button class="clickbait-btn" id="clickbaitBtn" aria-label="Open family surprise">
+      <span class="cb-notif-dot"></span>
+      <span class="cb-icon">📲</span>
+      <div class="cb-text">
+        <span class="cb-title">Family ❤️</span>
+        <span class="cb-msg">Your parents left something for you…</span>
+      </div>
+      <span class="cb-arrow">›</span>
+    </button>
+
+    <!-- iPhone-style dialer overlay -->
+    <div class="dialer-overlay" id="dialerOverlay" aria-modal="true" role="dialog">
+      <div class="dialer-screen" id="dialerScreen">
+
+        <!-- Status bar -->
+        <div class="dialer-statusbar">
+          <span class="dsb-time" id="dialerTime">9:41</span>
+          <div class="dsb-icons">
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="white"><rect x="0" y="4" width="3" height="8" rx="1" opacity=".4"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" opacity=".6"/><rect x="9" y="0.5" width="3" height="11.5" rx="1" opacity=".8"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2.5C10.5 2.5 12.7 3.6 14.2 5.3L15.5 4C13.7 2 11 0.8 8 0.8S2.3 2 0.5 4L1.8 5.3C3.3 3.6 5.5 2.5 8 2.5Z" opacity=".4"/><path d="M8 5.2C9.8 5.2 11.4 6 12.5 7.2L13.8 5.9C12.4 4.4 10.3 3.5 8 3.5S3.6 4.4 2.2 5.9L3.5 7.2C4.6 6 6.2 5.2 8 5.2Z" opacity=".7"/><circle cx="8" cy="10" r="1.5"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="white" stroke-opacity=".35"/><rect x="2" y="2" width="16" height="8" rx="2" fill="white"/><path d="M23 4v4a2 2 0 000-4z" fill="white" fill-opacity=".4"/></svg>
+          </div>
+        </div>
+
+        <!-- Caller info -->
+        <div class="dialer-caller">
+          <div class="dialer-avatar" id="dialerAvatar">
+            <span class="dialer-initials" id="dialerInitials">J</span>
+            <div class="dialer-pulse"></div>
+          </div>
+          <div class="dialer-name" id="dialerName">Jeffrey</div>
+          <div class="dialer-status" id="dialerStatus">Calling…</div>
+          <div class="dialer-timer" id="dialerTimer"></div>
+        </div>
+
+        <!-- Main controls grid -->
+        <div class="dialer-controls" id="dialerControls">
+          <div class="dialer-row">
+            <button class="dc-btn dc-disabled" disabled>
+              <span class="dc-icon">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M13 3v10M8 8l5-5 5 5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/><circle cx="13" cy="20" r="3" stroke="white" stroke-width="2" opacity=".45"/></svg>
+              </span>
+              <span class="dc-label">mute</span>
+            </button>
+            <button class="dc-btn dc-keypad-btn" id="dialerKeypadBtn">
+              <span class="dc-icon">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="white"><circle cx="6" cy="6" r="2"/><circle cx="13" cy="6" r="2"/><circle cx="20" cy="6" r="2"/><circle cx="6" cy="13" r="2"/><circle cx="13" cy="13" r="2"/><circle cx="20" cy="13" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="13" cy="20" r="2"/><circle cx="20" cy="20" r="2"/></svg>
+              </span>
+              <span class="dc-label">keypad</span>
+            </button>
+            <button class="dc-btn dc-disabled" disabled>
+              <span class="dc-icon">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><polygon points="13,3 21,20 13,16 5,20" stroke="white" stroke-width="2" stroke-linejoin="round" opacity=".45"/></svg>
+              </span>
+              <span class="dc-label">speaker</span>
+            </button>
+          </div>
+          <div class="dialer-row">
+            <button class="dc-btn dc-disabled" disabled>
+              <span class="dc-icon" style="font-size:22px;opacity:.45">+</span>
+              <span class="dc-label">add call</span>
+            </button>
+            <button class="dc-btn dc-disabled" disabled>
+              <span class="dc-icon">
+                <svg width="26" height="22" viewBox="0 0 26 22" fill="none"><rect x="1" y="1" width="24" height="17" rx="3" stroke="white" stroke-width="2" opacity=".45"/><path d="M9 18v3M17 18v3M6 21h14" stroke="white" stroke-width="2" stroke-linecap="round" opacity=".45"/></svg>
+              </span>
+              <span class="dc-label">FaceTime</span>
+            </button>
+            <button class="dc-btn dc-disabled" disabled>
+              <span class="dc-icon">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="10" r="4.5" stroke="white" stroke-width="2" opacity=".45"/><path d="M4 23c0-5 4-8 9-8s9 3 9 8" stroke="white" stroke-width="2" stroke-linecap="round" opacity=".45"/></svg>
+              </span>
+              <span class="dc-label">contacts</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Numpad (slides up) -->
+        <div class="dialer-numpad" id="dialerNumpad">
+          <div class="dnp-display-wrap">
+            <div class="dnp-display" id="dnpDisplay"></div>
+            <button class="dnp-back" id="dnpBack">⌫</button>
+          </div>
+          <div class="dnp-grid">
+            <button class="dnp-key" data-key="1"><span class="dnp-num">1</span><span class="dnp-sub"></span></button>
+            <button class="dnp-key" data-key="2"><span class="dnp-num">2</span><span class="dnp-sub">ABC</span></button>
+            <button class="dnp-key" data-key="3"><span class="dnp-num">3</span><span class="dnp-sub">DEF</span></button>
+            <button class="dnp-key" data-key="4"><span class="dnp-num">4</span><span class="dnp-sub">GHI</span></button>
+            <button class="dnp-key" data-key="5"><span class="dnp-num">5</span><span class="dnp-sub">JKL</span></button>
+            <button class="dnp-key" data-key="6"><span class="dnp-num">6</span><span class="dnp-sub">MNO</span></button>
+            <button class="dnp-key" data-key="7"><span class="dnp-num">7</span><span class="dnp-sub">PQRS</span></button>
+            <button class="dnp-key" data-key="8"><span class="dnp-num">8</span><span class="dnp-sub">TUV</span></button>
+            <button class="dnp-key" data-key="9"><span class="dnp-num">9</span><span class="dnp-sub">WXYZ</span></button>
+            <button class="dnp-key" data-key="*"><span class="dnp-num">*</span><span class="dnp-sub"></span></button>
+            <button class="dnp-key" data-key="0"><span class="dnp-num">0</span><span class="dnp-sub">+</span></button>
+            <button class="dnp-key" data-key="#"><span class="dnp-num">#</span><span class="dnp-sub"></span></button>
+          </div>
+          <div class="dnp-hint" id="dialerHint">enter the code to escape 🔑</div>
+        </div>
+
+        <!-- Hang up -->
+        <div class="dialer-hangup-wrap">
+          <button class="dialer-hangup" id="dialerHangup" aria-label="End call">
+            <svg width="30" height="14" viewBox="0 0 30 14" fill="white"><path d="M2.5 9.5C5 7 9.5 5.5 15 5.5S25 7 27.5 9.5L30 7C27 4 21.5 2 15 2S3 4 0 7L2.5 9.5Z" fill-rule="evenodd"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
 
     <!-- NAV -->
     <nav class="nav" id="nav">

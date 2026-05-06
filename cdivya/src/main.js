@@ -3,7 +3,7 @@ import { initCursor }       from './cursor.js';
 import { initNav }          from './nav.js';
 import { initParticles }    from './particles.js';
 import { initScrollReveal } from './scroll-reveal.js';
-import { initRunawayButtons } from './runaway.js';
+import { initDialer } from './dialer.js';
 
 // Letter easter egg messages
 const LETTER_TOASTS = {
@@ -92,24 +92,8 @@ async function bootstrap() {
   initLetterEasterEggs();
   initSecretWords();
 
-  // Runaway buttons
-  try {
-    const { default: anime } = await import('animejs');
-    initRunawayButtons(anime);
-  } catch {
-    // CSS-only fallback
-    document.querySelectorAll('.runaway-btn').forEach((btn) => {
-      const mv = () => {
-        btn.style.transition = 'left .5s cubic-bezier(.34,1.56,.64,1),top .5s cubic-bezier(.34,1.56,.64,1)';
-        btn.style.left = `${Math.random() * (window.innerWidth  - 150) + 40}px`;
-        btn.style.top  = `${Math.random() * (window.innerHeight - 60)  + 40}px`;
-      };
-      btn.style.left = `${Math.random() * (window.innerWidth  - 150) + 40}px`;
-      btn.style.top  = `${Math.random() * (window.innerHeight - 60)  + 40}px`;
-      btn.style.opacity = '1';
-      ['mouseover','touchstart','click'].forEach(ev => btn.addEventListener(ev, mv));
-    });
-  }
+  // Dialer (replaces runaway buttons)
+  initDialer();
 }
 
 document.readyState === 'loading'
