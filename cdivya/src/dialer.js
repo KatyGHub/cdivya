@@ -160,10 +160,6 @@ function openDialer() {
   setContact(currentIdx);
   overlay.classList.add('active');
   startRingback();
-  setTimeout(() => {
-    if (!overlay.classList.contains('active')) return;
-    startCallTimer();
-  }, 3000);
 }
 
 function doHangup() {
@@ -192,10 +188,6 @@ function doHangup() {
     setContact(currentIdx);
     startRingback();
     busy = false;
-    setTimeout(() => {
-      if (!overlay.classList.contains('active')) return;
-      startCallTimer();
-    }, 3000);
   }, 1200);
 }
 
