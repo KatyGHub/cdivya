@@ -20,7 +20,7 @@ function getCtx() {
 }
 
 function stopAll() {
-  ringNodes.forEach(n => { try { n.stop && n.stop(); } catch (_) {} });
+  ringNodes.forEach(n => { try { if (!n._sentinel) n.stop(); } catch (_) {} });
   ringNodes = [];
 }
 
@@ -28,50 +28,70 @@ function startRingback() {
   stopAll();
   const ctx = getCtx();
 
-  // One "burst": bell-like tone using 3 harmonics with natural attack+decay envelope
-  // freq: ~440Hz root + 2nd + 3rd partial, classic telephone timbre
+  // Real telephone ring = AM modulation:
+  // A ~425Hz carrier whose amplitude is tremolo'd at ~20Hz.
+  // That warble is what makes it sound like "brring" not a musical tone.
   function playBurst(startAt, duration) {
-    const freqs   = [440, 880, 1320];
-    const weights = [0.55, 0.30, 0.15];
+    // Carrier — the base tone
+    const carrier = ctx.createOscillator();
+    carrier.type = 'sine';
+    carrier.frequency.value = 425;
 
-    freqs.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
+    // Second carrier slightly detuned adds thickness (like two ringer coils)
+    const carrier2 = ctx.createOscillator();
+    carrier2.type = 'sine';
+    carrier2.frequency.value = 475;
 
-      const g = ctx.createGain();
-      // Sharp attack (5ms), hold, then decay over last 30% of duration
-      const attackEnd = startAt + 0.005;
-      const decayStart = startAt + duration * 0.7;
-      g.gain.setValueAtTime(0, startAt);
-      g.gain.linearRampToValueAtTime(0.32 * weights[i], attackEnd);
-      g.gain.setValueAtTime(0.32 * weights[i], decayStart);
-      g.gain.linearRampToValueAtTime(0, startAt + duration);
+    // Tremolo LFO — 20Hz gives the "brring" warble character
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 20;
 
-      osc.connect(g);
-      g.connect(ctx.destination);
-      osc.start(startAt);
-      osc.stop(startAt + duration + 0.01);
-      ringNodes.push(osc);
+    // LFO depth gain — controls how much the amplitude trembles
+    const lfoDepth = ctx.createGain();
+    lfoDepth.gain.value = 0.35;
+
+    // Carrier gain node — LFO modulates this
+    const carrierGain = ctx.createGain();
+    carrierGain.gain.value = 0.35;
+
+    // Envelope on top (sharp attack, hold, clean cutoff)
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, startAt);
+    env.gain.linearRampToValueAtTime(1, startAt + 0.012);  // 12ms attack
+    env.gain.setValueAtTime(1, startAt + duration - 0.025);
+    env.gain.linearRampToValueAtTime(0, startAt + duration); // clean stop
+
+    // Wire: carriers → carrierGain → env → out
+    //       lfo → lfoDepth → carrierGain.gain (AM)
+    lfo.connect(lfoDepth);
+    lfoDepth.connect(carrierGain.gain);
+    carrier.connect(carrierGain);
+    carrier2.connect(carrierGain);
+    carrierGain.connect(env);
+    env.connect(ctx.destination);
+
+    [carrier, carrier2, lfo].forEach(n => {
+      n.start(startAt);
+      n.stop(startAt + duration + 0.02);
+      ringNodes.push(n);
     });
   }
 
-  // Pattern: burst — short gap — burst — long silence — repeat
-  // Burst: 0.38s | Gap: 0.22s | Burst: 0.38s | Silence: 3.2s → cycle: ~4.18s
-  const BURST   = 0.38;
-  const GAP     = 0.22;
-  const SILENCE = 3.2;
+  // Double-ring pattern: brring (0.4s) · pause (0.2s) · brring (0.4s) · silence (3s)
+  const BURST   = 0.40;
+  const GAP     = 0.20;
+  const SILENCE = 3.0;
   const CYCLE   = BURST + GAP + BURST + SILENCE;
 
-  // Sentinel to detect stopAll() calls
-  const id = Symbol();
-  ringNodes.push({ stop: () => {}, _id: id });
+  const sentinel = { stop: () => {}, _sentinel: true };
+  ringNodes.push(sentinel);
 
   function scheduleCycle(startAt) {
-    if (!ringNodes.some(n => n._id === id)) return; // stopped
+    if (!ringNodes.includes(sentinel)) return;
     playBurst(startAt, BURST);
     playBurst(startAt + BURST + GAP, BURST);
-    const nextAt = startAt + CYCLE;
+    const nextAt  = startAt + CYCLE;
     const delayMs = Math.max(0, (nextAt - ctx.currentTime - 0.05) * 1000);
     setTimeout(() => scheduleCycle(nextAt), delayMs);
   }
