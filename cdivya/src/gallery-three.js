@@ -273,15 +273,16 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
 
   window.addEventListener('touchend', () => { dragActive = false; });
 
-  // Wheel: accelerates in direction of scroll, caps at speed 5
+  // Wheel: smooth bidirectional scroll — left/right equally responsive
   container.addEventListener('wheel', e => {
     e.preventDefault();
-    const wheelDelta = Math.sign(e.deltaY);
-    const direction  = wheelDelta > 0 ? 1 : -1;
-    speedFactor = direction * (Math.abs(speedFactor) + 0.8);
-    const sign = Math.sign(speedFactor);
-    speedFactor = sign * Math.min(5, Math.abs(speedFactor));
-    dragVelocity = 0;
+    // Use deltaX for trackpad horizontal swipe, deltaY for mousewheel
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    const direction = Math.sign(delta);
+    // Smooth acceleration cap — same feel left and right
+    speedFactor += direction * 0.9;
+    speedFactor  = Math.max(-5, Math.min(5, speedFactor));
+    dragVelocity = direction * 0.08;
     cleanup();
   }, { passive: false });
 

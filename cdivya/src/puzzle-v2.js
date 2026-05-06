@@ -528,9 +528,24 @@ export function initPuzzle() {
   openCard?.querySelector('.gc-btn')?.addEventListener('click',(e)=>{e.stopPropagation();openModal();});
   closeBtn?.addEventListener('click',closeModal);
   overlay?.addEventListener('click',closeModal);
-  shuffBtn?.addEventListener('click',newGame);
-  artBtn?.addEventListener('click',()=>{
-    artIndex=(artIndex+1)%ARTWORKS.length;
+  shuffBtn?.addEventListener('click', newGame);
+
+  const styleSelect = document.getElementById('styleSelect');
+  styleSelect?.addEventListener('change', () => {
+    const val = parseInt(styleSelect.value);
+    if (val === -1) {
+      // Random — pick randomly from all 100
+      artIndex = Math.floor(Math.random() * ARTWORKS.length);
+    } else {
+      // Pick a random artwork that uses this style index (0-9)
+      const matching = ARTWORK_DEFS
+        .map((d, i) => ({ d, i }))
+        .filter(({ d }) => d.s === val);
+      if (matching.length) {
+        const pick = matching[Math.floor(Math.random() * matching.length)];
+        artIndex = pick.i;
+      }
+    }
     newGame();
   });
   document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal();});

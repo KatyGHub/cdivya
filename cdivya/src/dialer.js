@@ -28,60 +28,102 @@ function startRingback() {
   stopAll();
   const ctx = getCtx();
 
-  // Real telephone ring = AM modulation:
-  // A ~425Hz carrier whose amplitude is tremolo'd at ~20Hz.
-  // That warble is what makes it sound like "brring" not a musical tone.
-  function playBurst(startAt, duration) {
-    // Carrier — the base tone
-    const carrier = ctx.createOscillator();
-    carrier.type = 'sine';
-    carrier.frequency.value = 425;
+  // ── Ultra-realistic PSTN telephone ring ───────────────────────────────────
+  // Real telephone ringers use a ~90V AC signal at 20Hz that vibrates an
+  // electromagnetic bell. This creates a complex harmonic series, NOT a pure
+  // tone. We simulate it with:
+  //   • Four harmonically-related oscillators (fundamental + overtones)
+  //   • A slow AM modulation at 20Hz (the mechanical bell vibration rate)
+  //   • A bandpass filter centered at 800Hz (earpiece resonance)
+  //   • Mild saturation via waveshaper (mechanical distortion of old ringer)
+  //   • Soft noise floor (room ambience / telephone circuit hiss)
 
-    // Second carrier slightly detuned adds thickness (like two ringer coils)
-    const carrier2 = ctx.createOscillator();
-    carrier2.type = 'sine';
-    carrier2.frequency.value = 475;
-
-    // Tremolo LFO — 20Hz gives the "brring" warble character
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 20;
-
-    // LFO depth gain — controls how much the amplitude trembles
-    const lfoDepth = ctx.createGain();
-    lfoDepth.gain.value = 0.35;
-
-    // Carrier gain node — LFO modulates this
-    const carrierGain = ctx.createGain();
-    carrierGain.gain.value = 0.35;
-
-    // Envelope on top (sharp attack, hold, clean cutoff)
-    const env = ctx.createGain();
-    env.gain.setValueAtTime(0, startAt);
-    env.gain.linearRampToValueAtTime(1, startAt + 0.012);  // 12ms attack
-    env.gain.setValueAtTime(1, startAt + duration - 0.025);
-    env.gain.linearRampToValueAtTime(0, startAt + duration); // clean stop
-
-    // Wire: carriers → carrierGain → env → out
-    //       lfo → lfoDepth → carrierGain.gain (AM)
-    lfo.connect(lfoDepth);
-    lfoDepth.connect(carrierGain.gain);
-    carrier.connect(carrierGain);
-    carrier2.connect(carrierGain);
-    carrierGain.connect(env);
-    env.connect(ctx.destination);
-
-    [carrier, carrier2, lfo].forEach(n => {
-      n.start(startAt);
-      n.stop(startAt + duration + 0.02);
-      ringNodes.push(n);
-    });
+  function makeSaturator(amount) {
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) {
+      const x = (i * 2) / 256 - 1;
+      curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+    }
+    const ws = ctx.createWaveShaper();
+    ws.curve = curve;
+    ws.oversample = '2x';
+    return ws;
   }
 
-  // Double-ring pattern: brring (0.4s) · pause (0.2s) · brring (0.4s) · silence (3s)
-  const BURST   = 0.40;
+  function playBurst(startAt, duration) {
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0, startAt);
+    masterGain.gain.linearRampToValueAtTime(0.55, startAt + 0.018); // 18ms mechanical attack
+    masterGain.gain.setValueAtTime(0.55, startAt + duration - 0.03);
+    masterGain.gain.linearRampToValueAtTime(0, startAt + duration);
+    masterGain.connect(ctx.destination);
+
+    // Bandpass filter — telephone speaker resonance
+    const bpf = ctx.createBiquadFilter();
+    bpf.type = 'bandpass';
+    bpf.frequency.value = 820;
+    bpf.Q.value = 1.4;
+    bpf.connect(makeSaturator(18));
+    makeSaturator(18).connect(masterGain);
+    // Re-wire: osc → bpf → saturator → masterGain
+    const sat = makeSaturator(18);
+    bpf.disconnect(); bpf.connect(sat); sat.connect(masterGain);
+
+    // Harmonic oscillators: fundamental 440Hz + 2nd + 3rd + 5th partial
+    const harmonics = [
+      { freq: 440,  gain: 0.55, type: 'sawtooth'  },
+      { freq: 880,  gain: 0.28, type: 'square'    },
+      { freq: 1320, gain: 0.14, type: 'sine'      },
+      { freq: 468,  gain: 0.22, type: 'sine'      }, // slight detune for beating
+    ];
+    const oscMix = ctx.createGain();
+    oscMix.gain.value = 0.7;
+    oscMix.connect(bpf);
+
+    harmonics.forEach(({ freq, gain: g, type }) => {
+      const osc  = ctx.createOscillator();
+      const gn   = ctx.createGain();
+      osc.type   = type;
+      osc.frequency.value = freq;
+      gn.gain.value = g;
+      osc.connect(gn); gn.connect(oscMix);
+      osc.start(startAt); osc.stop(startAt + duration + 0.04);
+      ringNodes.push(osc);
+    });
+
+    // 20Hz AM tremolo — the mechanical ringer bell rate
+    const lfo      = ctx.createOscillator();
+    const lfoGain  = ctx.createGain();
+    const lfoBase  = ctx.createGain();
+    lfo.type       = 'sine';
+    lfo.frequency.value = 20;
+    lfoGain.gain.value  = 0.40; // depth
+    lfoBase.gain.value  = 0.60; // DC offset keeps it positive
+    lfo.connect(lfoGain);
+    lfoGain.connect(oscMix.gain);
+    lfoBase.connect(oscMix.gain);
+    lfo.start(startAt); lfo.stop(startAt + duration + 0.04);
+    ringNodes.push(lfo);
+
+    // Very soft broadband hiss — telephone circuit noise
+    const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.1, ctx.sampleRate);
+    const noiseData   = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1;
+    const noiseHpf = ctx.createBiquadFilter();
+    noiseHpf.type = 'highpass'; noiseHpf.frequency.value = 2000;
+    const noiseGain = ctx.createGain(); noiseGain.gain.value = 0.012;
+    const noiseNode = ctx.createBufferSource();
+    noiseNode.buffer  = noiseBuffer;
+    noiseNode.loop    = true;
+    noiseNode.connect(noiseHpf); noiseHpf.connect(noiseGain); noiseGain.connect(masterGain);
+    noiseNode.start(startAt); noiseNode.stop(startAt + duration + 0.04);
+    ringNodes.push(noiseNode);
+  }
+
+  // Indian/international PSTN: 0.4s ring · 0.2s pause · 0.4s ring · 2.0s silence
+  const BURST   = 0.42;
   const GAP     = 0.20;
-  const SILENCE = 3.0;
+  const SILENCE = 2.0;
   const CYCLE   = BURST + GAP + BURST + SILENCE;
 
   const sentinel = { stop: () => {}, _sentinel: true };

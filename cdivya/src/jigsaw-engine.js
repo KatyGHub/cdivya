@@ -210,6 +210,11 @@ export class JigsawPuzzle {
     const held = this.drag?.group === piece.group;
     const shd  = held ? SHADOW_HELD : SHADOW_NORM;
 
+    const totalW = this.pw * this.cols;
+    const totalH = this.ph * this.rows;
+    const imgX   = -piece.col * this.pw;
+    const imgY   = -piece.row * this.ph;
+
     // ── Pass 1: Shadow ────────────────────────────────────────────────────
     ctx.save();
     ctx.translate(piece.x, piece.y);
@@ -222,30 +227,34 @@ export class JigsawPuzzle {
     ctx.restore();
 
     // ── Pass 2: Image ─────────────────────────────────────────────────────
-    // Draw the ENTIRE image scaled to span the full puzzle grid, offset so
-    // piece (col,row) aligns with local origin (0,0).  The clip path then
-    // carves out the jigsaw silhouette — including every tab protrusion.
-    // This avoids any source-rect clamping issues that left tab tips black.
+    // We draw the image TWICE to eliminate sub-pixel seam gaps between pieces:
+    // First draw slightly oversized (1.5px bleed on all sides, no clip) to fill
+    // any hairline transparent cracks; then draw the correctly-clipped version
+    // on top.  The 1px bleed is invisible once pieces sit adjacent to each other.
     ctx.save();
     ctx.translate(piece.x, piece.y);
-    ctx.clip(piece.path);
 
-    const totalW = this.pw * this.cols;
-    const totalH = this.ph * this.rows;
-    ctx.drawImage(
-      this.image,
-      -piece.col * this.pw,   // shift left so our column starts at x=0
-      -piece.row * this.ph,   // shift up  so our row    starts at y=0
-      totalW,                 // full image drawn at puzzle-grid scale
-      totalH
-    );
+    // Pass 2a: 1.5px oversized unclipped fill — eliminates seam gaps
+    const BLEED = 1.5;
+    const bx = imgX - BLEED * (this.pw / this.pw);  // = imgX - BLEED
+    ctx.save();
+    ctx.clip(piece.path);
+    ctx.drawImage(this.image, imgX - BLEED, imgY - BLEED,
+                  totalW + BLEED * 2, totalH + BLEED * 2);
+    ctx.restore();
+
+    // Pass 2b: exactly-clipped correct image
+    ctx.save();
+    ctx.clip(piece.path);
+    ctx.drawImage(this.image, imgX, imgY, totalW, totalH);
 
     if (held) {
-      ctx.strokeStyle = 'rgba(0,255,189,0.8)';
+      ctx.strokeStyle = 'rgba(0,255,189,0.85)';
       ctx.lineWidth   = 2.5;
       ctx.lineJoin    = 'round';
       ctx.stroke(piece.path);
     }
+    ctx.restore();
 
     ctx.restore();
   }

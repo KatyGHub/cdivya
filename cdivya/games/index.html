@@ -106,10 +106,22 @@
         <div class="puzzle-meta">
           <div class="puzzle-preview" id="puzzlePreview" title="Target image"></div>
           <div class="puzzle-meta-text">
-            <span class="p-art-label">Now playing:</span>
+            <span class="p-art-label">Pattern:</span>
             <span class="p-art-name" id="artName">Divya's Palette</span>
           </div>
-          <button class="btn btn-ghost btn-sm" id="artBtn">Next artwork (100 total) →</button>
+          <select class="p-style-select" id="styleSelect" title="Choose pattern style">
+            <option value="-1">🎲 Random</option>
+            <option value="0">🌈 Gradient Mesh</option>
+            <option value="1">💥 Neon Orbs</option>
+            <option value="2">🌌 Aurora Waves</option>
+            <option value="3">◼ Geometric Grid</option>
+            <option value="4">✦ Radial Burst</option>
+            <option value="5">〰 Wave Flow</option>
+            <option value="6">○ Bokeh Field</option>
+            <option value="7">🖋 Ink Blot</option>
+            <option value="8">⬛ Grid Glow</option>
+            <option value="9">✦ Cosmic Dust</option>
+          </select>
         </div>
 
         <div class="puzzle-board" id="puzzleBoard" role="grid"></div>

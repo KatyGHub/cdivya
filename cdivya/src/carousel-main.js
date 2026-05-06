@@ -1,6 +1,7 @@
 /**
- * carousel-main.js — Immersive cinematic carousel v2
- * Full-bleed image · Ken Burns drift · typewriter caption · chapter marker
+ * carousel-main.js — v3: Dark editorial — words AND image coexist beautifully
+ * Layout: Left ~55% caption · Right ~45% photo (contained, not zoomed)
+ * Words are the hero. Image accompanies. Minimal. Cinematic.
  */
 import './style.css';
 import { initCursor } from './cursor.js';
@@ -8,30 +9,30 @@ import { initNav }    from './nav.js';
 import { fetchGalleryImages, isConfigured } from './supabase-images.js';
 
 const CAPTIONS = [
-  "She paints. Actually paints. Not dabbles — paints.",
-  "Photography is just another language she speaks fluently.",
-  "Graphic design is her bread and butter. She makes it look embarrassingly effortless.",
-  "She writes too. Of course she does. Why wouldn't she.",
-  "When she loves you, she makes things for you. Actual, thoughtful, beautiful things.",
-  "The food she cooks hits different. Every. Single. Time.",
-  "She is, genuinely, a brilliant human being.",
-  "She catches the things you thought no one noticed. She noticed.",
-  "Freelancing on her own terms. Building something real and entirely hers.",
-  "Her gifts aren't gifts — they're proof she was paying attention when everyone else wasn't.",
-  "Two international trips, no parents, full send. That's just how she moves.",
-  "Every wedding, every event — she's the one behind the lens making sure we all look like we have our lives together.",
-  "Takes the chaos every time and still shows up. Every. Time.",
-  "She decided she was worth taking care of. She was right.",
-  "She made our small wins feel like actual celebrations.",
-  "Every new chapter — she puts herself out there, fully, no matter how the last one went.",
-  "That room of yours raised all of us. From school kids to the messed-up adults we became.",
-  "Talented in ways that are genuinely hard to count.",
-  "Every stray animal just living its life — she sees them. She cares. Genuinely.",
-  "First person I call when something's stuck in my head. She always helps it move.",
+  { text: "She paints. Actually paints. Not dabbles — paints.", attr: "The whole group" },
+  { text: "Photography is just another language she speaks fluently.", attr: "Anyone who's seen her work" },
+  { text: "Graphic design is her bread and butter. She makes it look embarrassingly effortless.", attr: "Every client, ever" },
+  { text: "She writes too. Of course she does. Why wouldn't she.", attr: "Still processing this" },
+  { text: "When she loves you, she makes things for you. Actual, thoughtful, beautiful things.", attr: "Everyone she's ever loved" },
+  { text: "The food she cooks hits different. Every. Single. Time.", attr: "Our collective stomachs" },
+  { text: "She is, genuinely, a brilliant human being.", attr: "Not up for debate" },
+  { text: "She catches the things you thought no one noticed. She noticed.", attr: "A six-month-old throwaway comment" },
+  { text: "Freelancing on her own terms. Building something real and entirely hers.", attr: "No one told her to. She decided." },
+  { text: "Her gifts aren't gifts — they're proof she was paying attention when everyone else wasn't.", attr: "Every birthday she's ever witnessed" },
+  { text: "Two international trips, no parents, full send. That's just how she moves.", attr: "Airport check-in, solo" },
+  { text: "Every wedding, every event — she's the one behind the lens making sure we all look like we have our lives together.", attr: "We do not have our lives together" },
+  { text: "Takes the chaos every time and still shows up. Every. Time.", attr: "The chaos knows this" },
+  { text: "She decided she was worth taking care of. She was right.", attr: "Firmly and quietly, a long time ago" },
+  { text: "She made our small wins feel like actual celebrations.", attr: "She'll try to do 1% of what you do for us" },
+  { text: "Every new chapter — she puts herself out there, fully, no matter how the last one went.", attr: "That takes real courage" },
+  { text: "That room of yours raised all of us. From school kids to the messed-up adults we became.", attr: "Messed-up with love" },
+  { text: "Talented in ways that are genuinely hard to count.", attr: "We tried. We gave up." },
+  { text: "Every stray animal just living its life — she sees them. She cares. Genuinely.", attr: "Every cat in a 2km radius" },
+  { text: "First person I call when something's stuck in my head. She always helps it move.", attr: "The brain trust" },
 ];
 
-const AUTOPLAY_MS   = 7000;
-const TYPEWRITER_MS = 26;
+const AUTOPLAY_MS   = 8000;
+const TYPEWRITER_MS = 22;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -41,49 +42,60 @@ function shuffle(arr) {
   }
   return a;
 }
-
 function pad(n) { return String(n).padStart(2, '0'); }
 
+// Elegant placeholder canvas matching brand palette
 function makePlaceholder(idx) {
   const pals = [
-    ['#160030','#FF2D55'], ['#001a22','#00FFBD'], ['#200018','#BF5FFF'],
-    ['#0d0d00','#FFB800'], ['#001428','#0088FF'], ['#1a1000','#FF8C42'],
-    ['#0a000a','#BF5FFF'], ['#00120a','#00FFBD'], ['#1a0000','#FF2D55'],
-    ['#080814','#4466FF'],
+    { bg: '#0e0012', ac: '#BF5FFF', ac2: '#FF2D55' },
+    { bg: '#00141a', ac: '#00FFBD', ac2: '#0088FF' },
+    { bg: '#14000a', ac: '#FF2D55', ac2: '#FF8C42' },
+    { bg: '#0a0a00', ac: '#FFB800', ac2: '#FF8C42' },
+    { bg: '#00101c', ac: '#00FFBD', ac2: '#BF5FFF' },
   ];
-  const [bg, ac] = pals[idx % pals.length];
-  const cv  = document.createElement('canvas');
-  cv.width  = 1600; cv.height = 900;
+  const { bg, ac, ac2 } = pals[idx % pals.length];
+  const cv = document.createElement('canvas');
+  cv.width = 900; cv.height = 1200; // portrait
   const ctx = cv.getContext('2d');
-  const g   = ctx.createLinearGradient(0, 0, 1600, 900);
-  g.addColorStop(0, bg); g.addColorStop(1, '#060606');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, 1600, 900);
-  const rg = ctx.createRadialGradient(800, 450, 0, 800, 450, 650);
-  rg.addColorStop(0, ac + '26'); rg.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = rg; ctx.fillRect(0, 0, 1600, 900);
-  for (let i = 0; i < 250; i++) {
-    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.035})`;
-    ctx.beginPath(); ctx.arc(Math.random()*1600, Math.random()*900, Math.random()*1.4, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, 900, 1200);
+  const g1 = ctx.createRadialGradient(450, 300, 0, 450, 300, 550);
+  g1.addColorStop(0, ac + '30'); g1.addColorStop(1, 'transparent');
+  ctx.fillStyle = g1; ctx.fillRect(0, 0, 900, 1200);
+  const g2 = ctx.createRadialGradient(250, 900, 0, 250, 900, 400);
+  g2.addColorStop(0, ac2 + '20'); g2.addColorStop(1, 'transparent');
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, 900, 1200);
+  for (let i = 0; i < 120; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.03})`;
+    ctx.beginPath();
+    ctx.arc(Math.random()*900, Math.random()*1200, Math.random()*1.8, 0, Math.PI*2);
+    ctx.fill();
   }
   return cv.toDataURL();
 }
 
-let slides = [], current = 0, autoplayID = null, isPlaying = true;
-let typewriterID = null, progressRaf = null, progressStart = null;
+// ── State ─────────────────────────────────────────────────────────────────────
+let slides       = [];
+let current      = 0;
+let autoplayID   = null;
+let isPlaying    = true;
+let typewriterID = null;
+let progressRaf  = null;
+let progressStart = null;
 
 initCursor(); initNav();
 
-const loadingEl   = document.getElementById('crLoading');
-const loadFillEl  = document.getElementById('crLoadFill');
-const stageEl     = document.getElementById('crStage');
-const prevBtn     = document.getElementById('crPrev');
-const nextBtn     = document.getElementById('crNext');
-const playBtn     = document.getElementById('crPlay');
-const progressFill= document.getElementById('crProgressFill');
-const dotsEl      = document.getElementById('crDots');
-const curEl       = document.getElementById('crCur');
-const totEl       = document.getElementById('crTot');
+const loadingEl    = document.getElementById('crLoading');
+const loadFillEl   = document.getElementById('crLoadFill');
+const stageEl      = document.getElementById('crStage');
+const prevBtn      = document.getElementById('crPrev');
+const nextBtn      = document.getElementById('crNext');
+const playBtn      = document.getElementById('crPlay');
+const progressFill = document.getElementById('crProgressFill');
+const dotsEl       = document.getElementById('crDots');
+const curEl        = document.getElementById('crCur');
+const totEl        = document.getElementById('crTot');
 
+// ── Load ─────────────────────────────────────────────────────────────────────
 async function loadImages() {
   let fakeP = 0;
   const fakeID = setInterval(() => {
@@ -99,7 +111,11 @@ async function loadImages() {
   if (loadFillEl) loadFillEl.style.width = '100%';
 
   const shuffled = shuffle(imgSrcs);
-  slides = CAPTIONS.map((caption, i) => ({ imgSrc: shuffled[i % shuffled.length], caption }));
+  slides = CAPTIONS.map((cap, i) => ({
+    imgSrc: shuffled[i % shuffled.length],
+    text:   cap.text,
+    attr:   cap.attr,
+  }));
 
   setTimeout(() => {
     loadingEl.style.opacity = '0';
@@ -110,6 +126,7 @@ async function loadImages() {
   }, 350);
 }
 
+// ── Build stage ───────────────────────────────────────────────────────────────
 function buildStage() {
   if (!stageEl) return;
   stageEl.innerHTML = '';
@@ -117,22 +134,24 @@ function buildStage() {
 
   slides.forEach((slide, i) => {
     const frame = document.createElement('div');
-    frame.className = 'cr2-frame';
+    frame.className = 'cr3-frame';
     frame.dataset.idx = i;
     frame.innerHTML = `
-      <div class="cr2-img-layer">
-        <img class="cr2-img" src="${slide.imgSrc}" alt="" draggable="false" loading="${i < 3 ? 'eager' : 'lazy'}" />
-        <div class="cr2-overlay"></div>
+      <div class="cr3-left">
+        <div class="cr3-index">${pad(i+1)}<span class="cr3-idx-sep"> / </span>${pad(slides.length)}</div>
+        <div class="cr3-quote">"</div>
+        <blockquote class="cr3-text"></blockquote>
+        <div class="cr3-cursor">|</div>
+        <cite class="cr3-attr"></cite>
+        <div class="cr3-rule"></div>
       </div>
-      <div class="cr2-caption-layer">
-        <div class="cr2-chapter">${pad(i + 1)} — ${pad(slides.length)}</div>
-        <div class="cr2-quote-glyph">"</div>
-        <p class="cr2-text"></p>
-        <span class="cr2-cursor">|</span>
-        <div class="cr2-underline"></div>
+      <div class="cr3-right">
+        <div class="cr3-img-frame">
+          <img class="cr3-img" src="${slide.imgSrc}" alt="" draggable="false" loading="${i < 3 ? 'eager' : 'lazy'}" />
+          <div class="cr3-img-vignette"></div>
+        </div>
+        <div class="cr3-img-num">${pad(i+1)}</div>
       </div>
-      <div class="cr2-lb cr2-lb-top"></div>
-      <div class="cr2-lb cr2-lb-bot"></div>
     `;
     stageEl.appendChild(frame);
   });
@@ -150,54 +169,68 @@ function buildStage() {
   }
 }
 
-function typewrite(frameEl, text, onDone) {
+// ── Typewriter ────────────────────────────────────────────────────────────────
+function typewrite(frameEl, text, attr, onDone) {
   clearInterval(typewriterID);
-  const el     = frameEl.querySelector('.cr2-text');
-  const cursor = frameEl.querySelector('.cr2-cursor');
-  const uline  = frameEl.querySelector('.cr2-underline');
-  if (!el) return;
-  el.textContent = '';
-  if (uline) uline.classList.remove('cr2-underline--on');
-  if (cursor) cursor.style.opacity = '1';
+  const textEl   = frameEl.querySelector('.cr3-text');
+  const cursorEl = frameEl.querySelector('.cr3-cursor');
+  const attrEl   = frameEl.querySelector('.cr3-attr');
+  const ruleEl   = frameEl.querySelector('.cr3-rule');
+  if (!textEl) return;
+  textEl.textContent = '';
+  if (attrEl)  { attrEl.textContent = ''; attrEl.style.opacity = '0'; }
+  if (cursorEl) cursorEl.style.opacity = '1';
+  if (ruleEl)   ruleEl.classList.remove('cr3-rule--on');
   let i = 0;
   typewriterID = setInterval(() => {
     if (i >= text.length) {
       clearInterval(typewriterID);
-      if (cursor) cursor.style.opacity = '0';
-      if (uline)  uline.classList.add('cr2-underline--on');
-      onDone?.();
+      if (cursorEl) cursorEl.style.opacity = '0';
+      if (ruleEl) ruleEl.classList.add('cr3-rule--on');
+      // Fade in attribution after text finishes
+      setTimeout(() => {
+        if (attrEl) { attrEl.textContent = `— ${attr}`; attrEl.style.opacity = '1'; }
+        onDone?.();
+      }, 300);
       return;
     }
-    el.textContent += text[i++];
+    textEl.textContent += text[i++];
   }, TYPEWRITER_MS);
 }
 
+// ── Navigate ──────────────────────────────────────────────────────────────────
 function goTo(index, animate = true) {
-  const prev = current;
-  current    = ((index % slides.length) + slides.length) % slides.length;
-  const frames = stageEl?.querySelectorAll('.cr2-frame') || [];
+  const prev  = current;
+  current     = ((index % slides.length) + slides.length) % slides.length;
+  const frames = stageEl?.querySelectorAll('.cr3-frame') || [];
 
   clearInterval(typewriterID);
 
   frames.forEach((frame, i) => {
-    frame.classList.remove('cr2-active', 'cr2-prev');
-    const ul = frame.querySelector('.cr2-underline');
-    if (ul) ul.classList.remove('cr2-underline--on');
-    const txt = frame.querySelector('.cr2-text');
-    if (txt) txt.textContent = '';
-    const cur = frame.querySelector('.cr2-cursor');
-    if (cur) cur.style.opacity = '0';
+    frame.classList.remove('cr3-active', 'cr3-prev', 'cr3-enter-r', 'cr3-enter-l');
+    const ruleEl = frame.querySelector('.cr3-rule');
+    ruleEl?.classList.remove('cr3-rule--on');
+    const txtEl = frame.querySelector('.cr3-text');
+    if (txtEl) txtEl.textContent = '';
+    const curEl2 = frame.querySelector('.cr3-cursor');
+    if (curEl2) curEl2.style.opacity = '0';
+    const attrEl = frame.querySelector('.cr3-attr');
+    if (attrEl) { attrEl.textContent = ''; attrEl.style.opacity = '0'; }
 
     if (i === current) {
-      frame.classList.add('cr2-active');
-      const img = frame.querySelector('.cr2-img');
-      img?.classList.remove('cr2-kb');
-      void img?.offsetWidth;
-      img?.classList.add('cr2-kb');
-      const delay = animate ? 400 : 150;
-      setTimeout(() => typewrite(frame, slides[i].caption), delay);
+      if (animate) {
+        frame.classList.add(index > prev ? 'cr3-enter-r' : 'cr3-enter-l');
+        requestAnimationFrame(() => {
+          frame.classList.add('cr3-active');
+          setTimeout(() => frame.classList.remove('cr3-enter-r', 'cr3-enter-l'), 700);
+          setTimeout(() => typewrite(frame, slides[i].text, slides[i].attr), 200);
+        });
+      } else {
+        frame.classList.add('cr3-active');
+        setTimeout(() => typewrite(frame, slides[i].text, slides[i].attr), 150);
+      }
     } else if (i === prev) {
-      frame.classList.add('cr2-prev');
+      frame.classList.add('cr3-prev');
     }
   });
 
@@ -205,7 +238,6 @@ function goTo(index, animate = true) {
     d.classList.toggle('active', i === current);
     d.setAttribute('aria-selected', i === current);
   });
-
   if (curEl) curEl.textContent = pad(current + 1);
   resetProgressBar();
 }
@@ -213,16 +245,17 @@ function goTo(index, animate = true) {
 function next() { goTo(current + 1); }
 function prev() { goTo(current - 1); }
 
+// ── Autoplay ──────────────────────────────────────────────────────────────────
 function startAutoplay() {
   stopAutoplay(); if (!isPlaying) return;
   autoplayID = setInterval(next, AUTOPLAY_MS);
   animateProgressBar();
 }
-function stopAutoplay() { clearInterval(autoplayID); cancelAnimationFrame(progressRaf); }
+function stopAutoplay()  { clearInterval(autoplayID); cancelAnimationFrame(progressRaf); }
 function resetAutoplay() { stopAutoplay(); startAutoplay(); }
 function togglePlay() {
   isPlaying = !isPlaying;
-  if (playBtn) { playBtn.textContent = isPlaying ? '⏸' : '▶'; }
+  if (playBtn) playBtn.textContent = isPlaying ? '⏸' : '▶';
   isPlaying ? startAutoplay() : stopAutoplay();
 }
 
@@ -243,6 +276,7 @@ function animateProgressBar() {
   progressRaf = requestAnimationFrame(tick);
 }
 
+// ── Events ────────────────────────────────────────────────────────────────────
 prevBtn?.addEventListener('click', () => { prev(); resetAutoplay(); });
 nextBtn?.addEventListener('click', () => { next(); resetAutoplay(); });
 playBtn?.addEventListener('click', togglePlay);

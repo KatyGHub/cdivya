@@ -12,8 +12,8 @@ const FLOAT_BUCKET = import.meta.env.VITE_SUPABASE_BUCKET || 'gallery';
 const isConfigured = !!(SUPABASE_URL && SUPABASE_KEY);
 
 // How many images to float simultaneously
-const MAX_FLOATS   = 6;
-const MIN_FLOATS   = 3;
+const MAX_FLOATS   = 14;
+const MIN_FLOATS   = 6;
 
 // ── Fetch images from the home-floats sub-folder ───────────────────────────
 async function fetchFloatImages() {
@@ -59,15 +59,16 @@ function makeFloat(src, index, total) {
 
   // Position: spread across the page, avoiding dead center cluster
   const zones = [
-    // [left%, top%, width%] — safe zones that avoid the hero center
-    [2,  8,  16], [78, 5,  14], [6,  55, 13], [80, 50, 15],
-    [1,  80, 17], [75, 80, 14], [50, 5,  12], [20, 90, 14],
-    [60, 88, 13], [38, 8,  11], [88, 30, 13], [3,  32, 14],
+    // [left%, top%, width%] — spread across viewport, avoiding hero text center
+    [1,  6,  9],  [82, 4,  8],  [5,  50, 8],  [84, 48, 9],
+    [0,  78, 10], [78, 78, 9],  [52, 3,  7],  [18, 88, 9],
+    [62, 85, 8],  [36, 5,  7],  [90, 28, 8],  [2,  30, 9],
+    [70, 18, 7],  [25, 72, 8],  [45, 90, 8],  [88, 62, 7],
   ];
   const zone  = zones[index % zones.length];
-  const left  = zone[0] + r() * 4 - 2;
-  const top   = zone[1] + r() * 5 - 2;
-  const size  = zone[2] + r() * 4;
+  const left  = zone[0] + r() * 3 - 1.5;
+  const top   = zone[1] + r() * 4 - 2;
+  const size  = zone[2] + r() * 3;
 
   // Gentle randomized drift path (CSS custom props)
   const dx1 = (r() - 0.5) * 40;

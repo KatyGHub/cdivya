@@ -442,10 +442,8 @@ export function initMathGame() {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    // Reset session
-    score = 0; level = 1; sessionStreak = 0; levelStreak = 0;
-    bootUI(content);
-    newPuzzle();
+    score = 0; sessionStreak = 0; levelStreak = 0;
+    showLevelPicker(content);
   }
   function closeModal() {
     modal.classList.remove('open');
@@ -460,6 +458,31 @@ export function initMathGame() {
   overlay?.addEventListener('click', closeModal);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+}
+
+function showLevelPicker(container) {
+  rootEl = container;
+  rootEl.innerHTML = `
+    <div class="m24-picker">
+      <div class="m24-picker-title">MAKE 24</div>
+      <p class="m24-picker-sub">Pick your starting level. Win 3 in a row to advance.</p>
+      <div class="m24-picker-grid">
+        ${[1,2,3,4,5].map(l => `
+          <button class="m24-level-card" data-lvl="${l}">
+            <div class="m24-lc-num">L${l}</div>
+            <div class="m24-lc-name">${LEVELS[l].label}</div>
+            <div class="m24-lc-detail">Numbers 1–${[6,8,10,13,13][l-1]} · ${LEVELS[l].time}s</div>
+          </button>`).join('')}
+      </div>
+    </div>
+  `;
+  rootEl.querySelectorAll('.m24-level-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      level = parseInt(btn.dataset.lvl);
+      bootUI(container);
+      newPuzzle();
+    });
   });
 }
 
