@@ -206,13 +206,11 @@ export class JigsawPuzzle {
 
   _drawPiece(piece) {
     if (!this.image) return;
-    const ctx = this.ctx;
+    const ctx  = this.ctx;
     const held = this.drag?.group === piece.group;
-    const shd = held ? SHADOW_HELD : SHADOW_NORM;
+    const shd  = held ? SHADOW_HELD : SHADOW_NORM;
 
-    // ── Pass 1: Shadow ─────────────────────────────────────────────────────
-    // A near-invisible fill in the piece shape triggers the drop shadow.
-    // Nothing else to draw — the shadow bleeds into the background naturally.
+    // ── Pass 1: Shadow ────────────────────────────────────────────────────
     ctx.save();
     ctx.translate(piece.x, piece.y);
     ctx.shadowBlur    = shd.blur;
@@ -223,31 +221,25 @@ export class JigsawPuzzle {
     ctx.fill(piece.path);
     ctx.restore();
 
-    // ── Pass 2: Image (clipped, tab areas filled with real image pixels) ───
-    // Problem in v1: drawImage only painted the base pw×ph rect, leaving the
-    // tab protrusions empty (black). The white border stroke on those empty
-    // tabs created the confusing cross shapes in the background.
-    // Fix: expand src+dst rects by TAB amount so image pixels flow into tabs.
+    // ── Pass 2: Image ─────────────────────────────────────────────────────
+    // Draw the ENTIRE image scaled to span the full puzzle grid, offset so
+    // piece (col,row) aligns with local origin (0,0).  The clip path then
+    // carves out the jigsaw silhouette — including every tab protrusion.
+    // This avoids any source-rect clamping issues that left tab tips black.
     ctx.save();
     ctx.translate(piece.x, piece.y);
     ctx.clip(piece.path);
 
-    const iw  = this.image.naturalWidth;
-    const ih  = this.image.naturalHeight;
-    const sw  = iw / this.cols;
-    const sh2 = ih / this.rows;
-    const pad = TAB * 1.25;  // slightly beyond max tab protrusion
-
+    const totalW = this.pw * this.cols;
+    const totalH = this.ph * this.rows;
     ctx.drawImage(
       this.image,
-      piece.col * sw - pad * sw,   piece.row * sh2 - pad * sh2,
-      sw  * (1 + pad * 2),         sh2 * (1 + pad * 2),
-      -pad * this.pw,              -pad * this.ph,
-      this.pw * (1 + pad * 2),     this.ph * (1 + pad * 2)
+      -piece.col * this.pw,   // shift left so our column starts at x=0
+      -piece.row * this.ph,   // shift up  so our row    starts at y=0
+      totalW,                 // full image drawn at puzzle-grid scale
+      totalH
     );
 
-    // Only show an outline when actively held — inside clip so it follows
-    // the actual piece silhouette, not the bounding box
     if (held) {
       ctx.strokeStyle = 'rgba(0,255,189,0.8)';
       ctx.lineWidth   = 2.5;
