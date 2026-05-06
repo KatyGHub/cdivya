@@ -80,12 +80,8 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
   container.appendChild(renderer.domElement);
 
   let camera;
-  let layers       = Array.from({ length: DEPTH_LAYERS }, () => []);
-  let dragActive   = false;
-  let lastX        = 0;
-  let dragVelocity = 0;
-  let speedFactor  = 1;
-  let lastTime     = 0;
+  let layers   = Array.from({ length: DEPTH_LAYERS }, () => []);
+  let lastTime = 0;
 
   // ── Resize ──────────────────────────────────────
   function resize() {
@@ -198,35 +194,44 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
     }
   }
 
-  // ── Animate ─────────────────────────────────────
+  // ── Clean single-variable interaction model ─────
+  // One truth: `velocity` (world-units/sec, positive = rightward flow).
+  // Drag and wheel both write to it. Animate decays it. No cross-fighting.
+  let velocity  = 1.0;   // auto-scroll baseline
+  let isDragging = false;
+  let dragLastX  = 0;
+  let dragLastT  = 0;
+  let dragVel    = 0;    // measured during drag for momentum
+
+  // ── Animate ──────────────────────────────────────
   function animate() {
     const now = performance.now();
-    const dt  = Math.min(40, now - lastTime) / 1000;
+    const dt  = Math.min(32, now - lastTime) / 1000;
     lastTime  = now;
     const w   = container.clientWidth;
 
-    dragVelocity *= 0.92;
-    // Use magnitude so right-drag feels as responsive as left-drag
-    if (Math.abs(dragVelocity) > 0.005) {
-      speedFactor = dragVelocity * 8;
-      speedFactor = Math.max(-5, Math.min(5, speedFactor));
+    // Decay toward baseline auto-scroll (1.0) when not interacting
+    if (!isDragging) {
+      velocity *= 0.94;
+      if (Math.abs(velocity) < 0.05) velocity = 0.05; // never fully stop
     }
-    if (Math.random() < 0.01) cleanup();
+
+    if (Math.random() < 0.008) cleanup();
 
     for (const sprites of layers) {
       if (!sprites?.length) continue;
       for (const s of sprites) {
         const ud = s.userData;
-        s.position.x += ud.speed * speedFactor * dt;
-        if (speedFactor > 0 && s.position.x - ud.width / 2 > w)
-          s.position.x = -ud.width / 2 - rand(0, ud.width);
-        else if (speedFactor < 0 && s.position.x + ud.width / 2 < 0)
-          s.position.x = w + ud.width / 2 + rand(0, ud.width);
+        s.position.x += ud.speed * velocity * dt;
 
-        const pulse = 1 + Math.sin(now * 0.001 + ud.seed) * 0.015;
-        s.scale.x = ud.width  * pulse;
-        s.scale.y = ud.height * pulse;
-        s.position.y = ud.baseY + Math.sin(now * 0.001 + ud.seed) * 5;
+        // Wrap around in whichever direction we're moving
+        if (velocity >= 0 && s.position.x - ud.width / 2 > w + 20)
+          s.position.x = -ud.width / 2 - rand(5, ud.width * 0.6);
+        else if (velocity < 0 && s.position.x + ud.width / 2 < -20)
+          s.position.x = w + ud.width / 2 + rand(5, ud.width * 0.6);
+
+        // Gentle bob
+        s.position.y = ud.baseY + Math.sin(now * 0.0008 + ud.seed) * 4;
       }
     }
     renderer.render(scene, camera);
@@ -240,57 +245,56 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
   animate();
   onReady?.();
 
-  // ── Interaction — mirrored from original CodePen logic ──
-  const getX = e => e.touches ? e.touches[0].clientX : e.clientX;
+  // ── Drag / touch ──────────────────────────────────
+  function onDragStart(clientX) {
+    isDragging = true;
+    dragLastX  = clientX;
+    dragLastT  = performance.now();
+    dragVel    = 0;
+    container.style.cursor = 'grabbing';
+  }
 
-  container.addEventListener('mousedown', e => {
-    dragActive = true;
-    lastX = getX(e);
-  });
+  function onDragMove(clientX) {
+    if (!isDragging) return;
+    const now = performance.now();
+    const dx  = clientX - dragLastX;
+    const dt2 = Math.max(1, now - dragLastT);
+    // velocity in "units" that match the speed field (pixels * speed factor)
+    dragVel   = (dx / dt2) * 18;          // tuned multiplier
+    velocity  = dragVel;
+    dragLastX = clientX;
+    dragLastT = now;
+  }
 
-  container.addEventListener('mousemove', e => {
-    if (!dragActive) return;
-    const x = getX(e);
-    const dx = x - lastX;
-    lastX = x;
-    dragVelocity = dx * 0.02;
-  });
+  function onDragEnd() {
+    isDragging = false;
+    // Hand off momentum: velocity already set from last move
+    container.style.cursor = 'grab';
+  }
 
-  window.addEventListener('mouseup', () => { dragActive = false; });
+  container.addEventListener('mousedown',  e => onDragStart(e.clientX));
+  window  .addEventListener('mousemove',   e => onDragMove(e.clientX));
+  window  .addEventListener('mouseup',       onDragEnd);
+  container.addEventListener('touchstart', e => onDragStart(e.touches[0].clientX), { passive: true });
+  window  .addEventListener('touchmove',   e => { if (isDragging) onDragMove(e.touches[0].clientX); }, { passive: true });
+  window  .addEventListener('touchend',      onDragEnd);
 
-  container.addEventListener('touchstart', e => {
-    dragActive = true;
-    lastX = getX(e);
-  }, { passive: true });
-
-  container.addEventListener('touchmove', e => {
-    if (!dragActive) return;
-    const x = getX(e);
-    const dx = x - lastX;
-    lastX = x;
-    dragVelocity = dx * 0.02;
-  }, { passive: true });
-
-  window.addEventListener('touchend', () => { dragActive = false; });
-
-  // Wheel: smooth bidirectional scroll — left/right equally responsive
+  // ── Wheel / trackpad ──────────────────────────────
+  // deltaX = trackpad horizontal swipe (already in px)
+  // deltaY = mouse wheel / trackpad vertical (map to horizontal)
   container.addEventListener('wheel', e => {
     e.preventDefault();
-    // Use deltaX for trackpad horizontal swipe, deltaY for mousewheel
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    const direction = Math.sign(delta);
-    // Smooth acceleration cap — same feel left and right
-    speedFactor += direction * 0.9;
-    speedFactor  = Math.max(-5, Math.min(5, speedFactor));
-    dragVelocity = direction * 0.08;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? -e.deltaX : -e.deltaY;
+    // Scale to roughly the same feel as drag
+    velocity += (delta / 10);
+    velocity  = Math.max(-6, Math.min(6, velocity));
     cleanup();
   }, { passive: false });
 
-  // Belt-and-braces: also catch wheel on document so it never bubbles past
-  document.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-
-  // ── Protection ───────────────────────────────────
+  document.addEventListener('wheel',       e => e.preventDefault(), { passive: false });
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('dragstart',   e => e.preventDefault());
   document.addEventListener('selectstart', e => e.preventDefault());
+
+  container.style.cursor = 'grab';
 }
