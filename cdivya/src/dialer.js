@@ -20,32 +20,62 @@ function getCtx() {
 }
 
 function stopAll() {
-  ringNodes.forEach(n => { try { n.stop(); } catch (_) {} });
+  ringNodes.forEach(n => { try { n.stop && n.stop(); } catch (_) {} });
   ringNodes = [];
 }
 
 function startRingback() {
   stopAll();
   const ctx = getCtx();
-  const master = ctx.createGain();
-  master.gain.value = 0.28;
-  master.connect(ctx.destination);
-  ringNodes.push(master);
 
-  function scheduleCycle(startAt) {
-    if (!ringNodes.includes(master)) return;
-    [440, 480].forEach(freq => {
+  // One "burst": bell-like tone using 3 harmonics with natural attack+decay envelope
+  // freq: ~440Hz root + 2nd + 3rd partial, classic telephone timbre
+  function playBurst(startAt, duration) {
+    const freqs   = [440, 880, 1320];
+    const weights = [0.55, 0.30, 0.15];
+
+    freqs.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      osc.connect(master);
+
+      const g = ctx.createGain();
+      // Sharp attack (5ms), hold, then decay over last 30% of duration
+      const attackEnd = startAt + 0.005;
+      const decayStart = startAt + duration * 0.7;
+      g.gain.setValueAtTime(0, startAt);
+      g.gain.linearRampToValueAtTime(0.32 * weights[i], attackEnd);
+      g.gain.setValueAtTime(0.32 * weights[i], decayStart);
+      g.gain.linearRampToValueAtTime(0, startAt + duration);
+
+      osc.connect(g);
+      g.connect(ctx.destination);
       osc.start(startAt);
-      osc.stop(startAt + 2);
+      osc.stop(startAt + duration + 0.01);
       ringNodes.push(osc);
     });
-    const delay = Math.max(0, (startAt - ctx.currentTime + 6) * 1000);
-    setTimeout(() => scheduleCycle(ctx.currentTime + 6), delay);
   }
+
+  // Pattern: burst — short gap — burst — long silence — repeat
+  // Burst: 0.38s | Gap: 0.22s | Burst: 0.38s | Silence: 3.2s → cycle: ~4.18s
+  const BURST   = 0.38;
+  const GAP     = 0.22;
+  const SILENCE = 3.2;
+  const CYCLE   = BURST + GAP + BURST + SILENCE;
+
+  // Sentinel to detect stopAll() calls
+  const id = Symbol();
+  ringNodes.push({ stop: () => {}, _id: id });
+
+  function scheduleCycle(startAt) {
+    if (!ringNodes.some(n => n._id === id)) return; // stopped
+    playBurst(startAt, BURST);
+    playBurst(startAt + BURST + GAP, BURST);
+    const nextAt = startAt + CYCLE;
+    const delayMs = Math.max(0, (nextAt - ctx.currentTime - 0.05) * 1000);
+    setTimeout(() => scheduleCycle(nextAt), delayMs);
+  }
+
   scheduleCycle(ctx.currentTime);
 }
 
