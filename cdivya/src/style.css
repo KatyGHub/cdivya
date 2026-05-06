@@ -1787,3 +1787,207 @@ body.home { overflow:hidden; height:100dvh; }
 @media (min-width: 1025px) {
   .game-cards { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════
+   DIVYADLE — How To Play Panel
+   ═══════════════════════════════════════════════════ */
+
+.wl-title-row {
+  display: flex; align-items: center; justify-content: center; gap: .75rem;
+}
+.wl-help-btn {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1.5px solid var(--border-h);
+  background: transparent; color: var(--sub);
+  font-family: var(--fH); font-size: .78rem; font-weight: 700;
+  cursor: pointer; transition: border-color .15s, color .15s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.wl-help-btn:hover { border-color: var(--mint); color: var(--mint); }
+
+/* How-to-play panel — collapsed by default */
+.wl-howto {
+  max-height: 0; overflow: hidden;
+  transition: max-height .35s cubic-bezier(.4,0,.2,1);
+  width: 100%;
+}
+.wl-howto--open { max-height: 400px; }
+
+.wl-howto-inner {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+.wl-howto-rule {
+  font-size: .8rem; color: var(--sub); line-height: 1.55; border-bottom: 1px solid var(--border); padding-bottom: .7rem;
+}
+.wl-howto-legend { display: flex; flex-direction: column; gap: .4rem; }
+.wl-howto-row    { display: flex; align-items: center; gap: .7rem; font-size: .78rem; color: var(--sub); }
+
+/* Demo tiles */
+.wl-demo-tile {
+  width: 34px; height: 34px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fH); font-size: 1rem; font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Reuse the existing state classes */
+.wl-howto-example {
+  border-top: 1px solid var(--border);
+  padding-top: .7rem;
+}
+.wl-howto-eg-label {
+  font-size: .72rem; color: var(--muted); margin-bottom: .5rem;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.wl-howto-demo-row { display: flex; gap: 5px; margin-bottom: .5rem; }
+.wl-howto-eg-note  { font-size: .72rem; color: var(--sub); line-height: 1.5; }
+
+/* ═══════════════════════════════════════════════════
+   MAKE 24 v2 — New HUD elements
+   ═══════════════════════════════════════════════════ */
+
+/* Level + combo counters */
+.m24-counter--level .m24-level-val {
+  font-family: var(--fH);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: var(--mint);
+  text-align: center;
+}
+.m24-counter--multi .m24-multi-val {
+  font-family: var(--fD);
+  font-size: 1.5rem;
+  color: var(--sub);
+  transition: color .3s, transform .3s;
+}
+.m24-counter--multi .m24-multi-val[data-active="true"] {
+  color: var(--amber);
+  animation: multiPop .4s var(--spring);
+}
+@keyframes multiPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Expression log */
+.m24-expr-log {
+  min-height: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  margin-top: .5rem;
+  width: 100%;
+  max-width: 340px;
+}
+.m24-expr-entry {
+  font-family: monospace;
+  font-size: .72rem;
+  color: var(--sub);
+  text-align: center;
+  opacity: .5;
+  transition: opacity .3s;
+}
+.m24-expr-new {
+  opacity: 1;
+  color: var(--mint);
+  animation: exprSlide .3s ease;
+}
+@keyframes exprSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Achievement toast */
+.m24-achievement {
+  position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.8);
+  background: rgba(14,14,14,.95);
+  border: 1px solid var(--amber);
+  border-radius: 14px;
+  padding: .85rem 1.4rem;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s, transform .25s var(--spring);
+  z-index: 15;
+  box-shadow: 0 0 40px rgba(255,184,0,.25);
+  max-width: 260px;
+}
+.m24-achievement.show {
+  opacity: 1; transform: translate(-50%, -50%) scale(1);
+}
+.m24-ach-title {
+  font-family: var(--fH); font-size: 1rem; font-weight: 800;
+  color: var(--amber); letter-spacing: .06em; margin-bottom: .2rem;
+}
+.m24-ach-sub { font-size: .75rem; color: var(--sub); }
+
+/* Level up toast */
+.m24-levelup {
+  position: absolute;
+  top: 30%; left: 50%; transform: translateX(-50%) translateY(-10px);
+  background: linear-gradient(135deg, var(--mint), var(--lilac));
+  color: #000; font-family: var(--fD);
+  font-size: 1.2rem; letter-spacing: .1em;
+  padding: .6rem 1.5rem; border-radius: var(--r);
+  pointer-events: none; opacity: 0;
+  transition: opacity .25s, transform .25s var(--spring);
+  z-index: 16;
+  white-space: nowrap;
+}
+.m24-levelup.show {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
+/* Arena critical state — edge pulse */
+.m24-arena[data-critical] {
+  animation: arenaCritical .5s ease infinite alternate;
+}
+@keyframes arenaCritical {
+  from { box-shadow: none; }
+  to   { box-shadow: inset 0 0 30px rgba(255,45,85,.18); }
+}
+
+/* Score breakdown in result */
+.m24r-breakdown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .65rem .9rem;
+  margin: .6rem 0;
+  width: 100%;
+  max-width: 260px;
+}
+.m24r-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .8rem; color: var(--sub); padding: .15rem 0;
+}
+.m24r-row strong { color: var(--text); }
+.m24r-row--multi strong { color: var(--amber); font-size: 1rem; }
+.m24r-row--total {
+  border-top: 1px solid var(--border); margin-top: .35rem; padding-top: .35rem;
+  color: var(--text); font-weight: 600;
+}
+.m24r-row--total strong { color: var(--mint); font-size: 1.1rem; }
+.m24r-totals { font-size: .9rem; color: var(--sub); margin: .3rem 0; }
+.m24r-totals strong { color: var(--text); }
+.m24r-level { font-size: .78rem; color: var(--sub); margin-bottom: .5rem; }
+.m24r-level strong { color: var(--mint); }
+
+.m24-title-row {
+  display: flex; align-items: baseline; gap: .75rem; justify-content: center;
+}
+.m24-target-badge {
+  font-family: var(--fD); font-size: 1.1rem; color: var(--amber);
+  letter-spacing: .08em;
+}

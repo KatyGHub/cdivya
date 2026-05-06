@@ -299,11 +299,50 @@ function buildHTML() {
   }
   kb += '</div>';
 
+  const howTo = `
+    <div class="wl-howto" id="wlHowTo">
+      <div class="wl-howto-inner">
+        <div class="wl-howto-rule">
+          <p>Guess the hidden 5-letter word in 6 tries. Every word is pulled from Divya's world — design, photography, and art vocabulary.</p>
+        </div>
+        <div class="wl-howto-legend">
+          <div class="wl-howto-row">
+            <div class="wl-demo-tile wl-correct">B</div>
+            <span>Right letter, right spot</span>
+          </div>
+          <div class="wl-howto-row">
+            <div class="wl-demo-tile wl-present">O</div>
+            <span>Right letter, wrong position</span>
+          </div>
+          <div class="wl-howto-row">
+            <div class="wl-demo-tile wl-absent">K</div>
+            <span>Letter is not in the word</span>
+          </div>
+        </div>
+        <div class="wl-howto-example">
+          <p class="wl-howto-eg-label">Example — guessing BOKEH:</p>
+          <div class="wl-howto-demo-row">
+            <div class="wl-demo-tile wl-correct">B</div>
+            <div class="wl-demo-tile wl-present">O</div>
+            <div class="wl-demo-tile wl-correct">K</div>
+            <div class="wl-demo-tile wl-absent">E</div>
+            <div class="wl-demo-tile wl-present">H</div>
+          </div>
+          <p class="wl-howto-eg-note">B and K are in the right spots. O and H are in the word but wrong positions. E is not in the word.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
   return `
     <div class="wl-header">
-      <h2 class="wl-title">DIVYADLE</h2>
+      <div class="wl-title-row">
+        <h2 class="wl-title">DIVYADLE</h2>
+        <button class="wl-help-btn" id="wlHelpBtn" aria-label="How to play">?</button>
+      </div>
       <p class="wl-sub">Design vocabulary · 5 letters · 6 guesses · daily word</p>
     </div>
+    ${howTo}
     <div class="wl-toast" aria-live="assertive"></div>
     ${grid}
     ${kb}
@@ -349,6 +388,16 @@ function startGame(container) {
   gameOver   = false;
 
   rootEl.innerHTML = buildHTML();
+
+  // How-to-play toggle
+  const helpBtn = rootEl.querySelector('#wlHelpBtn');
+  const howToEl = rootEl.querySelector('#wlHowTo');
+  if (helpBtn && howToEl) {
+    helpBtn.addEventListener('click', () => {
+      const open = howToEl.classList.toggle('wl-howto--open');
+      helpBtn.textContent = open ? '\u2715' : '?';
+    });
+  }
 
   rootEl.querySelectorAll('.wl-key').forEach(btn => {
     btn.addEventListener('click', () => handleKey(btn.dataset.k));
