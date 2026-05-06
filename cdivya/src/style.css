@@ -1991,3 +1991,256 @@ body.home { overflow:hidden; height:100dvh; }
   font-family: var(--fD); font-size: 1.1rem; color: var(--amber);
   letter-spacing: .08em;
 }
+
+/* ═══════════════════════════════════════════════════
+   HOME FLOATING IMAGES
+   ═══════════════════════════════════════════════════ */
+.hf-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hf-float {
+  position: absolute;
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0;
+  box-shadow: 0 8px 40px rgba(0,0,0,.55);
+  transition: opacity 1.2s ease;
+  animation: hfDrift var(--dur, 26s) ease-in-out var(--delay, 0s) infinite;
+}
+.hf-float.hf-loaded {
+  opacity: .18;
+}
+.hf-float img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(.7) brightness(.6);
+}
+@keyframes hfDrift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(var(--dx1,.0px), var(--dy1,0px)) rotate(var(--rot1, 2deg)); }
+  50%  { transform: translate(var(--dx2,0px), var(--dy2,0px)) rotate(var(--rot2,-2deg)); }
+  75%  { transform: translate(var(--dx1,0px), calc(var(--dy2,0px) * -0.5)) rotate(calc(var(--rot1,2deg)*0.6)); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   STORY — new bio-sub-last style
+   ═══════════════════════════════════════════════════ */
+.bio-sub-last {
+  display: block;
+  font-size: .9em;
+  opacity: .7;
+  margin-top: .75rem;
+  font-style: normal;
+}
+
+/* ═══════════════════════════════════════════════════
+   CAROUSEL v2 — Full-bleed cinematic
+   ═══════════════════════════════════════════════════ */
+
+/* Outer wrapper */
+.cr2-carousel {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+/* Stage */
+.cr2-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* Frame */
+.cr2-frame {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .9s cubic-bezier(.4,0,.2,1);
+}
+.cr2-frame.cr2-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cr2-frame.cr2-prev {
+  opacity: 0;
+}
+
+/* Image layer */
+.cr2-img-layer {
+  position: absolute;
+  inset: 0;
+}
+.cr2-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform-origin: center center;
+}
+/* Ken Burns */
+.cr2-img.cr2-kb {
+  animation: cr2KenBurns 14s ease-in-out forwards;
+}
+@keyframes cr2KenBurns {
+  from { transform: scale(1.0) translate(0, 0); }
+  to   { transform: scale(1.06) translate(-1%, -0.5%); }
+}
+
+/* Overlay: dramatic gradient bottom and sides */
+.cr2-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top,    rgba(0,0,0,.92) 0%, rgba(0,0,0,.45) 35%, rgba(0,0,0,.0) 65%),
+    linear-gradient(to right,  rgba(0,0,0,.3)  0%, transparent 40%),
+    linear-gradient(to left,   rgba(0,0,0,.1)  0%, transparent 40%);
+}
+
+/* Caption layer */
+.cr2-caption-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4rem 5vw 7rem;
+  max-width: 860px;
+}
+
+.cr2-chapter {
+  font-family: var(--fH);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.38);
+  margin-bottom: 1.2rem;
+}
+
+.cr2-quote-glyph {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(4rem, 8vw, 7rem);
+  line-height: .6;
+  color: var(--mint);
+  opacity: .22;
+  margin-bottom: .5rem;
+  font-style: italic;
+  font-weight: 300;
+  display: block;
+}
+
+.cr2-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  font-weight: 400;
+  line-height: 1.4;
+  color: rgba(255,255,255,.95);
+  font-style: italic;
+  letter-spacing: .01em;
+  margin: 0;
+  min-height: 2.5em;
+}
+
+.cr2-cursor {
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  color: var(--mint);
+  opacity: 0;
+  display: inline-block;
+  margin-left: 2px;
+  animation: cr2Blink .7s ease infinite;
+  vertical-align: baseline;
+}
+@keyframes cr2Blink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0; }
+}
+
+.cr2-underline {
+  height: 2px;
+  width: 0;
+  background: linear-gradient(to right, var(--mint), transparent);
+  margin-top: 1.2rem;
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+.cr2-underline--on { width: 120px; }
+
+/* Cinematic letterbox bars */
+.cr2-lb {
+  position: absolute;
+  left: 0; right: 0;
+  height: clamp(24px, 4vh, 44px);
+  background: #000;
+  z-index: 3;
+  pointer-events: none;
+}
+.cr2-lb-top { top: 0; }
+.cr2-lb-bot { bottom: 0; }
+
+/* HUD overlay */
+.cr2-hud {
+  position: absolute;
+  bottom: clamp(24px, 4vh, 44px);
+  left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  height: 3.5rem;
+}
+
+.cr2-counter {
+  font-family: var(--fH);
+  font-size: .78rem;
+  letter-spacing: .14em;
+  color: rgba(255,255,255,.4);
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  min-width: 70px;
+}
+.cr2-counter span:first-child { color: rgba(255,255,255,.85); font-size: .9rem; font-weight: 700; }
+.cr2-sep { color: rgba(255,255,255,.2); }
+
+.cr2-controls { display: flex; align-items: center; gap: .4rem; }
+
+/* Override the cr-dot active for dark bg */
+.cr2-carousel .cr-dot { background: rgba(255,255,255,.2); }
+.cr2-carousel .cr-dot.active { background: var(--mint); }
+
+/* Keep progress strip at very bottom */
+.cr2-carousel .cr-progress-strip {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 12;
+}
+
+/* Loading screen ─ reuse existing .cr-loading styles */
+
+/* Nav on carousel */
+.cr-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 2rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
+}
+
+@media (max-width: 768px) {
+  .cr2-caption-layer { padding: 2rem 1.5rem 6rem; }
+  .cr2-text { font-size: clamp(1.3rem, 5.5vw, 2rem); }
+  .cr2-quote-glyph { font-size: 4rem; }
+  .cr2-hud { padding: 0 1.5rem; }
+}

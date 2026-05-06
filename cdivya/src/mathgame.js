@@ -469,7 +469,7 @@ function bootUI(container) {
     <div class="m24-header">
       <div class="m24-title-row">
         <h2 class="m24-title">MAKE 24</h2>
-        <span class="m24-target-badge">= 24</span>
+        
       </div>
       <p class="m24-sub">Tap a number → tap an operator → tap another number. Combine all 4 to reach <strong>24</strong>. Win 3 times to level up.</p>
     </div>

@@ -339,7 +339,7 @@ function playWin() {
 
 // ── Taunts ────────────────────────────────────────────────────────────────────
 const TAUNTS = [
-  "Your record is 47 moves. You're at {n}. 🙃",
+  "This is a completely legal number of moves. Probably.",
   "The puzzle is winning. And you know it.",
   "At this rate you'll finish designing an entire brand before you finish this.",
   "Have you tried looking at the preview? Just a thought.",
@@ -494,7 +494,7 @@ export function initPuzzle() {
     won=true; stopTimer(); clearTimeout(tauntTID); playWin();
     board.style.backgroundImage=`url(${artCanvas.toDataURL()})`;
     board.classList.add('p-solved');
-    if(tauntEl) tauntEl.textContent=`🎉 Solved in ${moves} moves! Your record: 47. ${moves<=47?'New record. Obviously.':'You\'ll beat it next time.'}`;
+    if(tauntEl) tauntEl.textContent=`🎉 ${moves} moves. Clean. That's how it's done.`;
     if(hintEl)  hintEl.textContent=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} total time. Not bad at all.`;
     if(confetti) burst(confetti);
   }
@@ -506,7 +506,7 @@ export function initPuzzle() {
     if(moveEl)  moveEl.textContent='0';
     if(timerEl) timerEl.textContent='0:00';
     if(hintEl)  hintEl.textContent='';
-    if(tauntEl) tauntEl.textContent="Divya's record: 47 moves. Yours: ∞. Arrow keys work too.";
+    if(tauntEl) tauntEl.textContent="Go. Arrow keys work too. You've got this.";
     buildSlices(); tiles=shuffleTiles(); render(); scheduleTaunt();
   }
 

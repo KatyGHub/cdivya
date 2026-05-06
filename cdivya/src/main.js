@@ -4,6 +4,7 @@ import { initNav }          from './nav.js';
 import { initParticles }    from './particles.js';
 import { initScrollReveal } from './scroll-reveal.js';
 import { initDialer } from './dialer.js';
+import { initFloats }  from './floats.js';
 
 // Letter easter egg messages
 const LETTER_TOASTS = {
@@ -91,6 +92,9 @@ async function bootstrap() {
   // Easter eggs (homepage only)
   initLetterEasterEggs();
   initSecretWords();
+
+  // Floating ambient images (home page only)
+  initFloats();
 
   // Dialer (replaces runaway buttons)
   initDialer();

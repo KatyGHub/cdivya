@@ -246,7 +246,7 @@ export function initJigsawModal() {
 
     if (pbMsg) {
       pbMsg.textContent = isNewPB
-        ? '🏆 New personal best!'
+        ? '🏆 Well played!'
         : `Personal best: ${fmtTime(pb)}`;
       pbMsg.className = 'jz-pb-msg ' + (isNewPB ? 'is-pb' : '');
     }
