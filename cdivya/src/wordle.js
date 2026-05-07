@@ -1,160 +1,347 @@
 /**
- * wordle.js — DIVYADLE v2
- * Easier to understand. Trickier to solve.
- *
- * Changes from v1:
- * - How-to panel auto-opens on first ever play (sessionStorage)
- * - Animated demo row shows the mechanic in motion
- * - Category hint shown per puzzle ("today's word is about: light & exposure")
- * - Smarter, trickier word list — design terms that sound familiar but trip you up
- * - Untried letters highlighted on keyboard (dim the used ones)
- * - Better toast copy — warmer, funnier, more specific
- * - "You're close" encouragement toast at guess 4/5
- * - Guess counter visible ("3 of 6")
+ * wordle.js — DIVYADLE ∞
+ * Endless play · 8 categories · 400+ words · levels · streaks
+ * No daily limit. Play again instantly. Pick a category or go random.
  */
 
-// ─── Word List — tricky design/photo/art vocabulary ───────────────────────────
-// Each entry: [WORD, category hint, flavour clue shown on solve]
-const SECRET_WORDS = [
-  // Light & exposure
-  ['BOKEH', 'light & optics',    'Those dreamy blurred backgrounds she creates so effortlessly.'],
-  ['FLARE', 'light & optics',    'When the light source bleeds into the lens. Intentional. Always.'],
-  ['GRAIN', 'film & texture',    'The texture that makes a photo feel lived-in rather than sterile.'],
-  ['SHARP', 'optics',            'The first thing she checks. Always. Before anything else.'],
-  ['GLARE', 'light & optics',    'The enemy of outdoor portraits. She fixes it in post anyway.'],
-  ['DEPTH', 'composition',       'The illusion that a flat image has distance. She engineers it.'],
-  ['LIGHT', 'fundamentals',      'Everything starts and ends here. She knows this better than anyone.'],
-  // Colour
-  ['OCHRE', 'colour',            'The warm earthy yellow-orange. Used with restraint. Devastatingly well.'],
-  ['SEPIA', 'colour & tone',     'The warm brownish tone of aged photographs. Timeless.'],
-  ['TONAL', 'colour theory',     'Related to the range of values from light to dark in an image.'],
-  ['MUTED', 'colour',            'Desaturated. Quieter. Still saying everything.'],
-  ['VIVID', 'colour',            'When she wants you to feel it before you understand it.'],
-  ['AMBER', 'colour',            'Warm. Golden. The light at 5pm that she always shoots in.'],
-  ['ROUGE', 'colour',            'French for red. She\'d know this without being told.'],
-  ['IVORY', 'colour',            'Not white. Warmer than white. The difference matters.'],
-  ['CORAL', 'colour',            'The colour that lives between orange and pink. Perpetually in season.'],
-  ['SLATE', 'colour',            'Cool grey with a blue undertone. A sophisticated neutral.'],
-  // Typography
-  ['SERIF', 'typography',        'The little feet on letters. Cormorant Garamond has them. She notices.'],
-  ['GLYPH', 'typography',        'A single character form. The atom of written language.'],
-  ['KERNH', 'typography',        'The space between two specific letters, adjusted for optical harmony.'],
-  ['TRACK', 'typography',        'Uniform spacing applied across a range of characters.'],
-  ['ALEXA', 'typography',        'A typeface classification. She knows all of them.'],
-  ['SPINE', 'typography',        'The curved stroke in the letter S. Yes, letters have anatomy.'],
-  // Layout & composition
-  ['BLEED', 'print & layout',    'When artwork extends to the very edge of the page. Intentional.'],
-  ['GUTTER','print & layout',    'The inner margin where pages meet in a spread.'],
-  ['MOTIF', 'design language',   'A recurring visual element that builds meaning across a system.'],
-  ['SCALE', 'composition',       'The size relationship between elements. She always gets this right.'],
-  ['ALIGN', 'layout',            'The invisible grid holding everything together. Her instinct.'],
-  ['LAYER', 'process',           'How she builds: one decision at a time, always reversible.'],
-  ['FRAME', 'composition',       'What you choose to include — and exclude — is the whole art.'],
-  ['GRIDS', 'layout',            'The invisible scaffolding. Nobody sees it. Everyone feels it.'],
-  // Tools & process
-  ['BRUSH', 'tools',             'Digital or physical, she handles both with equal precision.'],
-  ['PIXEL', 'digital',           'The smallest unit. She\'s thought about it more than most.'],
-  ['TRACE', 'process',           'The first step in understanding a form is to redraw it.'],
-  ['DRAFT', 'process',           'Version one is just permission to make version two better.'],
-  ['BLEND', 'process',           'Where two things become one. She does this with ideas too.'],
-  ['CRAFT', 'fundamentals',      'The thing you can\'t fake. Time + attention. She has both.'],
-  ['PROOF', 'print process',     'The final check before committing. She never skips this.'],
-  ['PATCH', 'process',           'Small correction. Big difference. She knows which is which.'],
-  ['SWIPE', 'process',           'To move quickly through options. Her scroll speed is legendary.'],
-  // Photography specific
-  ['SHOOT', 'photography',       'The moment before the moment. She lives here.'],
-  ['PRIME', 'optics',            'A fixed focal length lens. She probably owns three.'],
-  ['TONES', 'photo editing',     'The complete range of values across a photograph.'],
-  ['DODGE', 'darkroom',          'To selectively lighten an area. From the darkroom. She knows.'],
-  ['BURST', 'photography',       'Multiple frames fired in rapid succession. Safety net for chaos.'],
-  // Finishing & output
-  ['GLOSS', 'finish',            'High shine paper stock. The opposite of her usual matte preference.'],
-  ['MATTE', 'finish',            'Flat, non-reflective. Her preferred surface for print. Always.'],
-  ['PROOF', 'print',             'Final check before the press run. One more look.'],
-  ['PRINT', 'output',            'When the digital becomes physical. The moment of truth.'],
-  ['STOCK', 'print',             'The paper itself. She has opinions about this. Strong ones.'],
-];
+// ─── Word Bank ─────────────────────────────────────────────────────────────────
+// Format: [WORD, flavour text]
+const BANK = {
 
-// De-dupe and extract just the word strings
-const WORD_ENTRIES = SECRET_WORDS.filter((e, i, arr) =>
-  arr.findIndex(x => x[0] === e[0]) === i
-);
-const WORDS_ONLY = WORD_ENTRIES.map(e => e[0]);
+  design: [
+    ['BOKEH', 'Those dreamy blurred backgrounds. She makes them look effortless.'],
+    ['SERIF', 'The little feet on letters. Cormorant Garamond has them. She notices.'],
+    ['GLYPH', 'A single character form — the atom of written language.'],
+    ['BLEED', 'Artwork that extends to the very edge of the page. Intentional.'],
+    ['MOTIF', 'A recurring visual element that builds meaning across a system.'],
+    ['GRAIN', 'The texture that makes a photo feel lived-in rather than sterile.'],
+    ['LAYER', 'How she builds — one decision at a time, always reversible.'],
+    ['SCALE', 'The size relationship between elements. She always gets this right.'],
+    ['ALIGN', 'The invisible grid holding everything together. Her instinct.'],
+    ['FRAME', 'What you include — and exclude — is the whole art.'],
+    ['TONAL', 'Related to the full range of values from light to dark.'],
+    ['OCHRE', 'The warm earthy yellow-orange. Used with restraint. Devastatingly well.'],
+    ['SEPIA', 'The warm tone of aged photographs. Timeless on purpose.'],
+    ['MUTED', 'Desaturated. Quieter. Still saying everything.'],
+    ['VIVID', 'When she wants you to feel it before you understand it.'],
+    ['AMBER', 'Warm. Golden. The light at 5pm that she always shoots in.'],
+    ['IVORY', 'Not white. Warmer than white. The difference matters enormously.'],
+    ['CORAL', 'The colour between orange and pink. Perpetually in season.'],
+    ['SLATE', 'Cool grey with a blue undertone. A sophisticated neutral.'],
+    ['PROOF', 'The final check before committing. She never skips this.'],
+    ['STOCK', 'The paper itself. She has strong opinions about this.'],
+    ['PRIME', 'A fixed focal length lens. She probably owns three.'],
+    ['DODGE', 'To selectively lighten an area. Old darkroom technique.'],
+    ['GLOSS', 'High shine paper stock. The opposite of her usual matte preference.'],
+    ['MATTE', 'Flat, non-reflective. Her preferred surface for print. Always.'],
+    ['FLARE', 'When the light source bleeds into the lens. Intentional. Always.'],
+    ['DEPTH', 'The illusion that a flat image has distance. She engineers it.'],
+    ['CRISP', 'Clean edges. No softness. When precision is the whole point.'],
+    ['STARK', 'Bare. Stripped back. When negative space does the heavy lifting.'],
+    ['DRAFT', 'Version one is permission to make version two better.'],
+    ['BLEND', 'Where two things become one. She does this with ideas too.'],
+    ['CRAFT', 'The thing you cannot fake. Time plus attention. She has both.'],
+    ['TRACE', 'The first step in understanding a form is to redraw it.'],
+    ['PIXEL', 'The smallest unit of a digital image. She\'s thought about this.'],
+    ['BRUSH', 'Digital or physical, she handles both with equal precision.'],
+  ],
 
+  geography: [
+    ['JAPAN', 'The archipelago of 6,852 islands. Cherry blossoms. Bullet trains.'],
+    ['KENYA', 'East African nation on the equator. The Great Rift Valley runs through it.'],
+    ['CHILE', 'The world\'s longest country. Stretches 4,300km north to south.'],
+    ['SPAIN', 'Where flamenco, Gaudí, and La Tomatina coexist without explanation.'],
+    ['GHANA', 'West African nation. First sub-Saharan country to gain independence in 1957.'],
+    ['NEPAL', 'Home to eight of the world\'s ten tallest mountains, including Everest.'],
+    ['QATAR', 'The world\'s wealthiest country per capita. Juts into the Persian Gulf.'],
+    ['LAOS',  'Landlocked Southeast Asian nation. The most bombed country in history.'],
+    ['WALES', 'The land of dragons, coal, and an almost unpronounceable language.'],
+    ['ANDES', 'The world\'s longest continental mountain range. 7,000km through South America.'],
+    ['SAHEL', 'The semi-arid zone south of the Sahara. Spanning 11 countries.'],
+    ['FJORD', 'A long, narrow inlet carved by glaciers. Norway\'s signature feature.'],
+    ['DELTA', 'A landform where a river deposits sediment as it meets the sea.'],
+    ['OASIS', 'A fertile spot in a desert, fed by underground water.'],
+    ['STEPPE','A flat, treeless grassland. Eurasia has the world\'s largest.'],
+    ['ATOLL', 'A ring-shaped coral reef enclosing a lagoon. Maldives is mostly these.'],
+    ['BASRA', 'Iraq\'s second-largest city. Port at the confluence of two rivers.'],
+    ['CAIRO', 'Africa\'s largest city. The Great Pyramid sits on its outskirts.'],
+    ['ACCRA', 'Capital of Ghana. Sits right on the Greenwich Meridian.'],
+    ['TUNIS', 'Capital of Tunisia. Founded by the Berbers, later Rome\'s rival.'],
+    ['HANOI', 'Capital of Vietnam. 1,000 years of history in one city.'],
+    ['DOVER', 'Famous for its white cliffs. The closest point between England and France.'],
+    ['KABUL', 'Capital of Afghanistan. One of the world\'s oldest cities.'],
+    ['NIGER', 'Largest country in West Africa by area. Mostly Sahara desert.'],
+    ['PRAIA', 'Capital of Cape Verde. An archipelago in the Atlantic.'],
+  ],
+
+  science: [
+    ['QUARK', 'The fundamental particle that makes up protons and neutrons.'],
+    ['PLASMA','The fourth state of matter. Lightning is plasma.'],
+    ['ORBIT', 'The curved path of an object around a star or planet.'],
+    ['XENON', 'A noble gas used in flash lamps and some anaesthetics.'],
+    ['ALGAE', 'Photosynthetic organisms that produce 50% of Earth\'s oxygen.'],
+    ['PRISM', 'A transparent object that refracts white light into its spectrum.'],
+    ['ALLOY', 'A mixture of two or more metals. Bronze, steel, brass.'],
+    ['LYRIC', 'Not science — skip.'],
+    ['FUNGI', 'The kingdom between plants and animals. Mushrooms. Yeast. Penicillin.'],
+    ['NERVE', 'A bundle of fibres that transmits signals between brain and body.'],
+    ['SYNAPSE','The gap between two neurons where signals are transmitted.'],
+    ['TIDAL', 'Relating to the periodic rise and fall of sea levels.'],
+    ['MAGMA', 'Molten rock beneath the Earth\'s surface. Called lava above ground.'],
+    ['OZONE', 'A molecule of three oxygen atoms. Earth\'s UV shield.'],
+    ['INERT', 'Chemically unreactive. The noble gases are all inert.'],
+    ['HELIX', 'A spiral structure. DNA is a double one.'],
+    ['IONIC', 'A type of chemical bond formed by transferring electrons.'],
+    ['LUNAR', 'Relating to the moon. The cycle is 29.5 days.'],
+    ['SOLAR', 'Relating to the sun. The source of almost all energy on Earth.'],
+    ['FETUS', 'An unborn offspring after the embryonic stage.'],
+    ['SPORE', 'A reproductive unit of fungi, plants, and bacteria.'],
+    ['VENOM', 'A toxic secretion delivered by bite or sting. Not the same as poison.'],
+    ['RIGID', 'Unable to bend or flex. A structural property, not a moral one.'],
+    ['GAUGE', 'An instrument for measuring. Also the width of a railway track.'],
+    ['AXION', 'A hypothetical subatomic particle. Dark matter candidate.'],
+  ],
+
+  history: [
+    ['ROMAN', 'Relating to the civilisation that gave us laws, roads, and concrete.'],
+    ['MOGUL', 'The dynasty that ruled the Indian subcontinent for 300 years.'],
+    ['TUDOR', 'The English royal dynasty that included Henry VIII and Elizabeth I.'],
+    ['HANOI', 'Capital contested for decades. The North Vietnamese held it throughout.'],
+    ['GULAG', 'The Soviet system of forced labour camps. Solzhenitsyn wrote about them.'],
+    ['STOIC', 'A school of philosophy founded in Athens around 300 BC.'],
+    ['PLATO', 'Athenian philosopher. Student of Socrates, teacher of Aristotle.'],
+    ['MAGNA', 'The first word of a 1215 charter that limited royal power in England.'],
+    ['OPIUM', 'The trade that sparked two wars between Britain and China in the 1800s.'],
+    ['ALAMO', 'The 1836 battle in Texas. "Remember the Alamo."'],
+    ['VICHY', 'The French government that collaborated with Nazi Germany 1940–44.'],
+    ['MOORS', 'North African Muslim inhabitants of the Iberian Peninsula 711–1492.'],
+    ['SERF',  'A medieval agricultural labourer bound to the lord\'s land.'],
+    ['FEUDAL','The system of land ownership that defined medieval Europe.'],
+    ['EDICT', 'An official proclamation issued by a person in authority.'],
+    ['EXALT', 'To raise to a high position. Emperors were exalted. Often too much.'],
+    ['SIEGE', 'A military strategy of surrounding and starving out a fortification.'],
+    ['TRUCE', 'A temporary agreement to stop fighting. Often violated shortly after.'],
+    ['SCOUT', 'A soldier sent ahead to gather information on the enemy.'],
+    ['REALM', 'A kingdom or domain. "In the realm of kings."'],
+    ['ENVOY', 'A diplomatic representative sent to a foreign country.'],
+    ['PAGAN', 'A follower of a pre-Christian or non-Abrahamic religion.'],
+    ['RELIC', 'An object from the past that has survived. Sacred or historical.'],
+    ['ANNEX', 'To incorporate territory into a country or state.'],
+    ['LIEGE', 'A feudal lord to whom loyalty was owed.'],
+  ],
+
+  geopolitics: [
+    ['VETO',  'The power to block a decision. UN Security Council members have it.'],
+    ['JUNTA', 'A military group that has taken control of a government.'],
+    ['PROXY', 'In geopolitics, a war fought through third parties by major powers.'],
+    ['BLOCS', 'Groups of countries aligned politically. Cold War had two main ones.'],
+    ['PACT',  'A formal agreement between nations. The Molotov–Ribbentrop was one.'],
+    ['ROGUE', 'A state that defies international norms. A contested label.'],
+    ['TROOP', 'A group of soldiers. "Troop deployments" signal escalation.'],
+    ['ENVOY', 'A diplomatic representative. When talks are happening, envoys fly.'],
+    ['SANCTIONS', 'Economic penalties imposed on a country for its behaviour.'],
+    ['TRADE', 'The exchange of goods between nations. The source of most conflicts.'],
+    ['TARIF', 'Misspelling aside — a tax on imported goods. Used as a weapon.'],
+    ['REBEL', 'An armed group fighting against a government or authority.'],
+    ['DRONE', 'An unmanned aerial vehicle. Redefined modern warfare.'],
+    ['INTEL', 'Gathered information about an adversary. What spies collect.'],
+    ['PIVOT', 'A strategic shift in foreign policy. Obama pivoted to Asia.'],
+    ['BLOC',  'A group of countries with aligned political or economic interests.'],
+    ['OPTIC', 'In politics, how something appears publicly matters as much as reality.'],
+    ['DETENTE','A period of improved relations between previously hostile powers.'],
+    ['PURGE', 'The removal of opponents from a political party or government.'],
+    ['EXILE', 'Forced removal from one\'s country. Used to neutralise opponents.'],
+    ['DEPOT', 'A military storage facility. Strategic in any conflict.'],
+    ['STALL', 'A delay tactic in negotiations. Often used to buy time.'],
+    ['TALKS', 'Diplomatic negotiations. Usually preceded by a crisis.'],
+    ['ROGUE', 'Label applied to states that operate outside international norms.'],
+    ['FRONT', 'A political coalition or an active line of military engagement.'],
+  ],
+
+  culture: [
+    ['MANGA', 'Japanese comics. The art form that influenced a generation of illustrators.'],
+    ['OPERA', 'An art form combining singing, orchestral music, and theatre.'],
+    ['MURAL', 'A work of art painted directly onto a wall. Street art at scale.'],
+    ['BATIK', 'A wax-resist dyeing technique originating in Java.'],
+    ['CRAFT', 'Making things by hand. The opposite of algorithmic.'],
+    ['PROSE', 'Written or spoken language in its ordinary, non-poetic form.'],
+    ['LYRIC', 'The words of a song. Or poetry expressing personal emotion.'],
+    ['TANGO', 'A passionate partnered dance originating in Buenos Aires.'],
+    ['TAPAS', 'Small Spanish dishes. The social eating style Europe copied.'],
+    ['RAMEN', 'Japanese noodle soup with a devoted global following.'],
+    ['SUSHI', 'Vinegared rice with various toppings. Precision food.'],
+    ['CREPE', 'A thin French pancake. Sweet or savoury. Always better than expected.'],
+    ['SALSA', 'A dance, a sauce, and a genre of music. The same word covers all three.'],
+    ['HAIKU', 'A Japanese poem in three lines: 5-7-5 syllables.'],
+    ['KABUKI','A form of classical Japanese theatre. Elaborate costumes and makeup.'],
+    ['AZTEC', 'The Mesoamerican civilisation that built Tenochtitlan.'],
+    ['MAORI', 'The indigenous Polynesian people of New Zealand.'],
+    ['GRIOT', 'A West African oral historian, storyteller, and musician.'],
+    ['TOTEM', 'A natural object adopted as an emblem by a person or clan.'],
+    ['SHRINE','A sacred place dedicated to a deity or venerated person.'],
+    ['PLAZA', 'An open public square in a town or city. The social centre.'],
+    ['COURT', 'An area for sport, justice, or royalty — the word covers everything.'],
+    ['BAZAAR','A Middle Eastern or South Asian market. Organised chaos.'],
+    ['GUILD', 'A medieval association of craftsmen or merchants.'],
+    ['FEAST', 'A large meal, especially one marking a celebration or ritual.'],
+  ],
+
+  sport: [
+    ['RUGBY', 'A contact sport played with an oval ball. Invented at Rugby School in 1823.'],
+    ['CHESS', 'A strategy board game played on 64 squares. Not technically a sport.'],
+    ['JAVELIN','A throwing event in athletics. The spear evolved into Olympic sport.'],
+    ['VOLTA', 'A cycling term — a tour or grand tour of a country.'],
+    ['DRAFT', 'In American sports, the process of selecting new players each season.'],
+    ['MATCH', 'A game or contest between two sides. Loaded word in tennis.'],
+    ['PITCH', 'The playing surface for football, cricket, or hockey.'],
+    ['SPRINT','Running at maximum speed over a short distance.'],
+    ['RELAY', 'A race in which teams of runners each complete part of the distance.'],
+    ['GUARD', 'A defensive position in basketball. Also protects the quarterback.'],
+    ['SERVE', 'The stroke that begins each point in tennis or volleyball.'],
+    ['RALLY', 'A sustained exchange of shots in tennis. Also a political event.'],
+    ['FINCH', 'Not a sport term — skip.'],
+    ['FOUL',  'An infringement of the rules. In basketball, you get five.'],
+    ['CATCH', 'Fundamental skill in cricket, baseball, and American football.'],
+    ['DRIVE', 'A long, powerful shot in golf. Or the determination to succeed.'],
+    ['SWEEP', 'To win every game in a series. Also a cricket shot.'],
+    ['DEBUT', 'A player\'s first appearance for a team or in a competition.'],
+    ['MEDAL', 'The tangible reward for excellence at the Olympic Games.'],
+    ['SQUAD', 'The full group of players from which a team is selected.'],
+    ['TRACK', 'The oval circuit for athletics or cycling.'],
+    ['COURT', 'The playing surface for tennis, basketball, or squash.'],
+    ['STAKE', 'What is at risk in a competition. High stakes, high pressure.'],
+    ['FLANK', 'The side positions in a team. Wingers play on the flanks.'],
+    ['DRILLS','Repetitive training exercises. The foundation of any skill.'],
+  ],
+
+  general: [
+    ['IRONY', 'When what happens is the opposite of what you expected. Often misused.'],
+    ['AXIOM', 'A statement accepted as self-evidently true without proof.'],
+    ['TACIT', 'Understood without being stated. An unspoken agreement.'],
+    ['SCOFF', 'To speak with derision. Also to eat greedily. Same word somehow.'],
+    ['QUIRK', 'A peculiar habit or characteristic. Usually the most interesting part of someone.'],
+    ['STOIC', 'Enduring pain or hardship without complaint. Also a philosopher.'],
+    ['BRAVADO','A bold manner or show of boldness intended to impress.'],
+    ['CHAOS', 'Complete disorder. Also the state before the universe was organised.'],
+    ['PIVOT', 'To turn around a fixed point. In business, to change direction entirely.'],
+    ['OPTIC', 'Relating to vision. Also a measure dispenser in a British pub.'],
+    ['KNACK', 'A special skill or talent. Some people just have it.'],
+    ['DWARF', 'A person, star, or planet significantly smaller than normal.'],
+    ['FLAIR', 'A natural talent or stylish quality. She has it. Obviously.'],
+    ['NUANCE','A subtle distinction or variation. Most things require it.'],
+    ['QUIRK', 'An unusual feature that makes something distinctive.'],
+    ['CRISP', 'Dry, clean, precise. Also a potato snack. Both are good.'],
+    ['ADAGE', 'A short statement expressing a general truth. A proverb.'],
+    ['CLOUT', 'Influence or power. Also to strike someone. Both still used.'],
+    ['GUILE', 'Sly or cunning intelligence. The charming kind of deception.'],
+    ['INEPT', 'Having no skill. The opposite of Divya at her job.'],
+    ['LUCID', 'Clear and easily understood. What good design always is.'],
+    ['MELEE', 'A confused fight involving many people. Or a French word for chaos.'],
+    ['NAIVE', 'Lacking experience or wisdom. Not necessarily an insult.'],
+    ['TEMPO', 'The speed of music, speech, or any recurring activity.'],
+    ['VIGIL', 'A period of staying awake to keep watch or pray.'],
+    ['WHIM',  'A sudden desire or change of mind. Spontaneity in a word.'],
+    ['ZEAL',  'Great energy or enthusiasm. The good kind of obsession.'],
+    ['BRASH', 'Self-assertive in a rude, noisy way. Confidence without tact.'],
+    ['CRAVE', 'To feel a powerful desire for something. Human. Constant.'],
+    ['DREAD', 'Great fear or apprehension. The Sunday evening feeling.'],
+  ],
+
+};
+
+// ─── Category config ───────────────────────────────────────────────────────────
+const CATEGORIES = {
+  random:      { label: '🎲 Random',        color: 'var(--mint)',   desc: 'Anything goes. All categories.' },
+  design:      { label: '🎨 Design & Photo', color: 'var(--lilac)', desc: 'Divya\'s home turf. Should be easy. Isn\'t.' },
+  geography:   { label: '🌍 Geography',      color: '#4CAF82',      desc: 'Countries, cities, landforms.' },
+  science:     { label: '🔬 Science',        color: '#4FC3F7',      desc: 'Physics, biology, chemistry.' },
+  history:     { label: '📜 History',        color: 'var(--amber)', desc: 'Empires, events, eras.' },
+  geopolitics: { label: '⚖️ Geopolitics',    color: 'var(--rose)',  desc: 'Power, conflict, diplomacy.' },
+  culture:     { label: '🎭 Culture & Food', color: '#FF8C42',      desc: 'Art, dance, food, traditions.' },
+  sport:       { label: '🏆 Sport',          color: '#66BB6A',      desc: 'Games, athletes, tactics.' },
+  general:     { label: '💡 General',        color: '#9575CD',      desc: 'Words, concepts, ideas.' },
+};
+
+// Flatten all words for random + valid set
+const ALL_WORDS = Object.values(BANK).flat();
 const VALID = new Set([
-  ...WORDS_ONLY,
-  'ABOUT','ABOVE','ADULT','AFTER','AGAIN','AGENT','AGREE','AHEAD','ALARM',
-  'ALBUM','ALERT','ALIVE','ALLOW','ALONE','ALTER','ANGEL','ANGLE','ANGRY',
-  'APART','APPLY','ARISE','ARRAY','ASIDE','AUDIO','AVOID','AWAKE','AWARE',
-  'BACON','BADGE','BASIC','BASIS','BATCH','BEACH','BEARD','BEGAN','BEGIN',
-  'BEING','BELOW','BENCH','BIRTH','BLACK','BLADE','BLANK','BLAST','BLAZE',
-  'BLIND','BLOCK','BLOOD','BLOWN','BLUES','BOARD','BONUS','BOOST','BRACE',
-  'BRAIN','BRAVE','BREAD','BREAK','BREED','BRICK','BRIEF','BRING','BROAD',
-  'BROKE','BROWN','BUDDY','BUILD','BUILT','BURST','BUYER','CABIN','CANDY',
-  'CARRY','CATCH','CAUSE','CHAIN','CHAIR','CHASE','CHECK','CHESS','CHEST',
-  'CHIEF','CHILD','CLAIM','CLASS','CLEAR','CLIMB','CLOSE','CLOUD','COAST',
-  'COULD','COUNT','COURT','COVER','CRACK','CRANE','CRASH','CRAZY','CREAM',
-  'CRIME','CROSS','CROWD','CROWN','CRUSH','DANCE','DIRTY','DOUBT','DRAMA',
-  'DREAM','DRIVE','DROVE','DRUMS','EARLY','EARTH','EIGHT','ELITE','EMPTY',
-  'ENEMY','ENJOY','ENTER','EVERY','EXACT','EXTRA','FAINT','FAITH','FALSE',
-  'FANCY','FAULT','FEAST','FIELD','FINAL','FIRED','FIXED','FLOAT','FLOOD',
-  'FLOOR','FORCE','FORGE','FOUND','FRESH','FRONT','FROZE','FULLY','FUNNY',
-  'GHOST','GIVEN','GLASS','GLOBE','GLORY','GRACE','GRADE','GRAND','GRANT',
-  'GRASP','GRASS','GRAVE','GREAT','GREEN','GRIEF','GRIND','GROUP','GROWN',
-  'GUARD','GUIDE','HAPPY','HARSH','HEART','HEAVY','HONEY','HONOR','HOUSE',
-  'HUMAN','HUMOR','IDEAL','IMAGE','INNER','JEWEL','JOINT','JUDGE','JUICE',
-  'KNIFE','KNOCK','KNOWN','LABOR','LARGE','LASER','LATER','LAUGH','LEARN',
-  'LEAVE','LEMON','LIMIT','LOCAL','LOOSE','LOWER','LUCKY','MAGIC','MAJOR',
-  'MAKER','MARCH','MASON','MATCH','MODEL','MONEY','MONTH','MORAL','MOUSE',
-  'MOVIE','MUSIC','NERVE','NIGHT','NOBLE','NOISE','NORTH','NOVEL','NURSE',
-  'OFFER','OFTEN','OCEAN','ORDER','PAINT','PANEL','PAPER','PAUSE','PEACE',
-  'PEARL','PHASE','PHOTO','PIANO','PIECE','PILOT','PLACE','PLANE','PLANT',
-  'POWER','PRESS','PRICE','PROBE','PROSE','QUERY','QUEUE','QUICK','QUIET',
-  'QUOTE','RADAR','RADIO','RAISE','RALLY','RANGE','RAPID','RATIO','REACH',
-  'REALM','REBEL','REPLY','RESET','RIDER','RIGHT','RIGID','RISKY','RIVAL',
-  'ROCKY','ROUND','ROUTE','ROYAL','RULER','SAINT','SCENE','SCORE','SCOUT',
-  'SENSE','SERVE','SEVEN','SHADE','SHAKE','SHAME','SHIFT','SHINE','SIGHT',
-  'SKILL','SKULL','SLEEP','SLICE','SLIDE','SMALL','SMART','SMELL','SMILE',
-  'SMOKE','SOUND','SOUTH','SPEAK','SPEND','SPLIT','SPORT','SPRAY','SQUAD',
-  'STACK','STAFF','STAGE','STAND','STARS','STATE','STEAL','STEAM','STEEL',
-  'STONE','STORE','STORM','STORY','STUCK','STUDY','SUGAR','SUITE','SUNNY',
-  'SUPER','SWEET','SWIFT','SWING','TABLE','TASTE','TEACH','TEARS','TEETH',
-  'THEME','THICK','THINK','THREE','THROW','TIGER','TIGHT','TIMES','TIRED',
-  'TITLE','TOAST','TODAY','TOKEN','TOTAL','TOUCH','TOUGH','TOWER','TRACK',
-  'TRADE','TRAIL','TRAIN','TRAIT','TREAT','TREND','TRIAL','TRICK','TRIED',
-  'TRULY','TRUST','TRUTH','UNDER','UNION','UNITY','UNTIL','UPPER','UPSET',
-  'VALUE','VIDEO','VIRAL','VISIT','VITAL','VOICE','WASTE','WATCH','WATER',
-  'WEARY','WEIRD','WHITE','WHOLE','WOMEN','WORLD','WORSE','WORTH','WRITE',
-  'WRONG','YOUNG','YOUTH','ZEBRA','SHOWN','SHOWN','COLOR','STYLE','PROUD',
-  'SPACE','MOODY','ADOBE','CRISP','SOLID','NUDGE','CLEAN','PLAIN','BLOOM',
-  'STARK','FLASH','SHOOT','CURVE','SHAPE','BRAND','PRINT','GLOSS','GLYPH',
-  'MOTIF','GRIDS','SWIPE','PRIME','TONAL','DODGE','PROOF','STOCK','GUTTER',
-  'PATCH','BURST','DEPTH','FOCUS','GRAIN','SPEED','SPARE','SPARK','DRAFT',
+  ...ALL_WORDS.map(e => e[0]),
+  // Common 5-letter words for guessing (not secret words)
+  'ABOUT','ABOVE','ADULT','AFTER','AGAIN','AGENT','AGREE','AHEAD','ALARM','ALBUM',
+  'ALERT','ALIVE','ALLOW','ALONE','ALTER','ANGEL','ANGLE','ANGRY','APART','APPLY',
+  'ARISE','ARRAY','ASIDE','AUDIO','AVOID','AWAKE','AWARE','BACON','BADGE','BASIC',
+  'BASIS','BATCH','BEACH','BEARD','BEGAN','BEGIN','BEING','BELOW','BENCH','BIRTH',
+  'BLACK','BLADE','BLANK','BLAST','BLAZE','BLIND','BLOCK','BLOOD','BLOWN','BLUES',
+  'BOARD','BONUS','BOOST','BRACE','BRAIN','BRAVE','BREAD','BREAK','BREED','BRICK',
+  'BRIEF','BRING','BROAD','BROKE','BROWN','BUDDY','BUILD','BUILT','BURST','BUYER',
+  'CABIN','CANDY','CARRY','CATCH','CAUSE','CHAIN','CHAIR','CHASE','CHECK','CHEST',
+  'CHIEF','CHILD','CLAIM','CLASS','CLEAR','CLIMB','CLOSE','CLOUD','COAST','COULD',
+  'COUNT','COVER','CRACK','CRANE','CRASH','CRAZY','CREAM','CRIME','CROSS','CROWD',
+  'CROWN','CRUSH','DANCE','DIRTY','DOUBT','DRAMA','DREAM','DRIVE','DROVE','DRUMS',
+  'EARLY','EARTH','EIGHT','ELITE','EMPTY','ENEMY','ENJOY','ENTER','EVERY','EXACT',
+  'EXTRA','FAINT','FAITH','FALSE','FANCY','FAULT','FEAST','FIELD','FINAL','FIRED',
+  'FIXED','FLOAT','FLOOD','FLOOR','FORCE','FORGE','FOUND','FRESH','FRONT','FROZE',
+  'FULLY','FUNNY','GHOST','GIVEN','GLASS','GLOBE','GLORY','GRACE','GRADE','GRAND',
+  'GRANT','GRASP','GRASS','GRAVE','GREAT','GREEN','GRIEF','GRIND','GROUP','GROWN',
+  'GUARD','GUIDE','HAPPY','HARSH','HEART','HEAVY','HONEY','HONOR','HOUSE','HUMAN',
+  'HUMOR','IDEAL','IMAGE','INNER','JEWEL','JOINT','JUDGE','JUICE','KNIFE','KNOCK',
+  'KNOWN','LABOR','LARGE','LASER','LATER','LAUGH','LEARN','LEAVE','LEMON','LIMIT',
+  'LOCAL','LOOSE','LOWER','LUCKY','MAGIC','MAJOR','MAKER','MARCH','MASON','MATCH',
+  'MODEL','MONEY','MONTH','MORAL','MOUSE','MOVIE','MUSIC','NERVE','NIGHT','NOBLE',
+  'NOISE','NORTH','NOVEL','NURSE','OFFER','OFTEN','OCEAN','ORDER','PAINT','PANEL',
+  'PAPER','PAUSE','PEACE','PEARL','PHASE','PHOTO','PIANO','PIECE','PILOT','PLACE',
+  'PLANE','PLANT','POWER','PRESS','PRICE','PROBE','PROSE','QUERY','QUEUE','QUICK',
+  'QUIET','QUOTE','RADAR','RADIO','RAISE','RALLY','RANGE','RAPID','RATIO','REACH',
+  'REALM','REBEL','REPLY','RESET','RIDER','RIGHT','RIGID','RISKY','RIVAL','ROCKY',
+  'ROUND','ROUTE','ROYAL','RULER','SAINT','SCENE','SCORE','SCOUT','SENSE','SERVE',
+  'SEVEN','SHADE','SHAKE','SHAME','SHIFT','SHINE','SIGHT','SKILL','SKULL','SLEEP',
+  'SLICE','SLIDE','SMALL','SMART','SMELL','SMILE','SMOKE','SOUND','SOUTH','SPEAK',
+  'SPEND','SPLIT','SPORT','SPRAY','SQUAD','STACK','STAFF','STAGE','STAND','STARS',
+  'STATE','STEAL','STEAM','STEEL','STONE','STORE','STORM','STORY','STUCK','STUDY',
+  'SUGAR','SUITE','SUNNY','SUPER','SWEET','SWIFT','SWING','TABLE','TASTE','TEACH',
+  'TEARS','TEETH','THEME','THICK','THINK','THREE','THROW','TIGER','TIGHT','TIMES',
+  'TIRED','TITLE','TOAST','TODAY','TOKEN','TOTAL','TOUCH','TOUGH','TOWER','TRACK',
+  'TRADE','TRAIL','TRAIN','TRAIT','TREAT','TREND','TRIAL','TRICK','TRIED','TRULY',
+  'TRUST','TRUTH','UNDER','UNION','UNITY','UNTIL','UPPER','UPSET','VALUE','VIDEO',
+  'VIRAL','VISIT','VITAL','VOICE','WASTE','WATCH','WATER','WEARY','WEIRD','WHITE',
+  'WHOLE','WOMEN','WORLD','WORSE','WORTH','WRITE','WRONG','YOUNG','YOUTH','ZEBRA',
+  'LYRIC','TANGO','MURAL','JOUST','SWIPE','VENOM','AXIOM','TACIT','FLAIR','GUILE',
+  'LUCID','MELEE','NAIVE','TEMPO','VIGIL','BRASH','CRAVE','DREAD','COMET','HELIX',
+  'OZONE','SPORE','GAUGE','PRISM','ALLOY','ALGAE','EDICT','SIEGE','TRUCE','ENVOY',
+  'PAGAN','RELIC','LIEGE','PURGE','EXILE','STALL','FJORD','DELTA','OASIS','ATOLL',
+  'STEPPE','MANGA','OPERA','BATIK','TAPAS','RAMEN','SUSHI','CREPE','SALSA','HAIKU',
+  'KABUKI','AZTEC','MAORI','GRIOT','TOTEM','SHRINE','BAZAAR','GUILD','RELAY','FLANK',
 ]);
-
-// ─── Daily Word ────────────────────────────────────────────────────────────────
-function getDailyEntry() {
-  const d     = new Date();
-  const epoch = Date.UTC(2025, 0, 1);
-  const today = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-  const diff  = Math.floor((today - epoch) / 86400000);
-  return WORD_ENTRIES[Math.abs(diff) % WORD_ENTRIES.length];
-}
 
 // ─── State ─────────────────────────────────────────────────────────────────────
 const MAX_GUESSES = 6;
 const WORD_LEN    = 5;
 
 let answer      = '';
-let answerEntry = null;
+let answerFlavour = '';
+let answerCat   = 'random';
 let guesses     = [];
 let currentRow  = 0;
 let currentStr  = '';
 let gameOver    = false;
 let rootEl      = null;
 let _keyHandler = null;
+let sessionWins = 0;
+let sessionStreak = 0;
+let usedWords   = new Set();
 
-// ─── Evaluate ──────────────────────────────────────────────────────────────────
+// ─── Pick a word ──────────────────────────────────────────────────────────────
+function pickWord(cat) {
+  const pool = cat === 'random'
+    ? ALL_WORDS.filter(e => e[0].length === 5)
+    : (BANK[cat] || []).filter(e => e[0].length === 5);
+  const unused = pool.filter(e => !usedWords.has(e[0]));
+  const source = unused.length > 0 ? unused : pool; // recycle if exhausted
+  const entry  = source[Math.floor(Math.random() * source.length)];
+  return entry || pool[0];
+}
+
+// ─── Evaluate ─────────────────────────────────────────────────────────────────
 function evaluate(guess, target) {
   const result = Array(WORD_LEN).fill('absent');
   const tLeft  = target.split('');
@@ -170,7 +357,7 @@ function evaluate(guess, target) {
   return result;
 }
 
-// ─── DOM Helpers ───────────────────────────────────────────────────────────────
+// ─── DOM ──────────────────────────────────────────────────────────────────────
 function getTile(r, c) { return rootEl?.querySelector(`.wl-tile[data-r="${r}"][data-c="${c}"]`); }
 function getKey(k)     { return rootEl?.querySelector(`.wl-key[data-k="${k}"]`); }
 
@@ -178,18 +365,14 @@ function renderInput() {
   for (let c = 0; c < WORD_LEN; c++) {
     const t  = getTile(currentRow, c);
     if (!t) continue;
-    const ch = currentStr[c] || '';
-    t.textContent = ch;
-    t.dataset.state = ch ? 'filled' : '';
+    t.textContent = currentStr[c] || '';
+    t.dataset.state = currentStr[c] ? 'filled' : '';
   }
-  // Update guess counter
-  const ctr = rootEl?.querySelector('.wl-guess-ctr');
-  if (ctr) ctr.textContent = `${currentRow + 1} of ${MAX_GUESSES}`;
 }
 
-function updateGuessCounter() {
-  const ctr = rootEl?.querySelector('.wl-guess-ctr');
-  if (ctr) ctr.textContent = `${Math.min(currentRow + 1, MAX_GUESSES)} of ${MAX_GUESSES}`;
+function updateCtr() {
+  const el = rootEl?.querySelector('.wl-guess-ctr');
+  if (el) el.textContent = `Guess ${Math.min(currentRow + 1, MAX_GUESSES)} of ${MAX_GUESSES}`;
 }
 
 function shakeRow(r) {
@@ -201,12 +384,9 @@ function shakeRow(r) {
 }
 
 function revealRow(r, result, done) {
-  const DELAY = 95, DUR = 400;
   for (let c = 0; c < WORD_LEN; c++) {
-    const t = getTile(r, c);
-    if (!t) continue;
-    const state  = result[c];
-    const letter = t.textContent;
+    const t = getTile(r, c); if (!t) continue;
+    const state = result[c], letter = t.textContent;
     setTimeout(() => {
       t.classList.add('wl-flip-out');
       setTimeout(() => {
@@ -215,15 +395,14 @@ function revealRow(r, result, done) {
         t.dataset.state = state;
         const k = getKey(letter);
         if (k) {
-          const pri = { correct: 3, present: 2, absent: 1 };
-          const cur = k.dataset.state || '';
-          if ((pri[state] || 0) > (pri[cur] || 0)) k.dataset.state = state;
+          const pri = { correct:3, present:2, absent:1 };
+          if ((pri[state]||0) > (pri[k.dataset.state]||0)) k.dataset.state = state;
         }
-        setTimeout(() => t.classList.remove('wl-flip-in'), DUR);
-      }, DUR / 2);
-    }, c * DELAY);
+        setTimeout(() => t.classList.remove('wl-flip-in'), 200);
+      }, 200);
+    }, c * 90);
   }
-  setTimeout(done, WORD_LEN * DELAY + DUR + 120);
+  setTimeout(done, WORD_LEN * 90 + 420);
 }
 
 function bounceRow(r) {
@@ -234,9 +413,9 @@ function bounceRow(r) {
   }
 }
 
-// ─── Toast ─────────────────────────────────────────────────────────────────────
+// ─── Toast ────────────────────────────────────────────────────────────────────
 let _toastTimer;
-function toast(msg, dur = 1800) {
+function toast(msg, dur = 1900) {
   const el = rootEl?.querySelector('.wl-toast');
   if (!el) return;
   el.textContent = msg;
@@ -245,132 +424,210 @@ function toast(msg, dur = 1800) {
   _toastTimer = setTimeout(() => el.classList.remove('show'), dur);
 }
 
-// Context-aware toast messages
-const ENCOURAGE_4 = ['Two more shots. You\'ve got this.', 'Getting closer. Think design.', 'You know this world better than most.'];
-const ENCOURAGE_5 = ['Last chance. Trust your instincts.', 'One more. Think: what would she use every day?', 'Final guess. Go with your gut.'];
+const NEAR_MISS = [
+  'Getting warm. Stay in the category.',
+  'You can smell it from here.',
+  'One more look at those yellows.',
+  'Almost. Think harder.',
+  'Your brain knows this.',
+];
+const LAST_CHANCE = [
+  'Last guess. Trust your gut.',
+  'Final shot. Make it count.',
+  'One word stands between you and glory.',
+];
 
-// ─── Stats ─────────────────────────────────────────────────────────────────────
-const LS_KEY = 'cdivya_divyadle_v2';
-function loadStats() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; } }
-function saveStats(s) { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch {} }
-
-function recordResult(won, attempts) {
-  const s = loadStats();
-  s.played = (s.played || 0) + 1;
-  s.won    = (s.won    || 0) + (won ? 1 : 0);
-  s.streak = won ? (s.streak || 0) + 1 : 0;
-  s.maxStreak = Math.max(s.maxStreak || 0, s.streak);
-  if (won) { s.dist = s.dist || {}; s.dist[attempts] = (s.dist[attempts] || 0) + 1; }
-  saveStats(s);
-  return s;
-}
-
-// ─── Personality Badges ────────────────────────────────────────────────────────
-function getBadge(won, attempts) {
-  if (!won) return { badge: 'Design Block', msg: 'Even the best designers need a redraw.', emoji: '😔' };
-  const badges = [
-    { badge: 'LITERALLY PSYCHIC',     msg: 'One guess. You either knew or you lied.',         emoji: '🔮' },
-    { badge: 'Absolute Elite',         msg: 'Two guesses. That\'s just showing off.',          emoji: '👑' },
-    { badge: 'Golden Ratio Brain',     msg: 'Three. The mathematically satisfying solve.',     emoji: '✨' },
-    { badge: 'Good Eye',               msg: 'Four tries. Solid. Like good kerning.',           emoji: '🎨' },
-    { badge: 'The Comeback',           msg: 'Five guesses. Squeezed it out. Very Divya.',      emoji: '🔥' },
-    { badge: 'Last Pixel Standing',    msg: 'Six. The wire. You made it count.',               emoji: '🎲' },
-  ];
-  return badges[(attempts - 1)] || badges[5];
-}
-
-// ─── Result Panel ──────────────────────────────────────────────────────────────
-function showResult(won, attempts) {
+// ─── Result panel ─────────────────────────────────────────────────────────────
+function showResult(won, guessCount) {
   const el = rootEl?.querySelector('.wl-result');
   if (!el) return;
-  const s   = recordResult(won, attempts);
-  const b   = getBadge(won, attempts);
-  const pct = s.played ? Math.round((s.won / s.played) * 100) : 0;
-  const flavour = answerEntry?.[2] || '';
+
+  if (won) { sessionWins++; sessionStreak++; }
+  else     { sessionStreak = 0; }
+
+  // Update session counter
+  const ctrEl = rootEl?.querySelector('.wl-session-ctr');
+  if (ctrEl) ctrEl.innerHTML = `
+    <span class="wl-sc-item">✅ ${sessionWins} solved</span>
+    <span class="wl-sc-item">🔥 ${sessionStreak} streak</span>
+  `;
+
+  const catCfg = CATEGORIES[answerCat] || CATEGORIES.random;
+  const badge = won ? [
+    { e:'🔮', t:'PSYCHIC',       m:'One guess? Come on.' },
+    { e:'👑', t:'ELITE',         m:'Two guesses. Showing off.' },
+    { e:'✨', t:'SHARP',         m:'Three. Clean. Satisfying.' },
+    { e:'🎨', t:'SOLID',         m:'Four tries. Good solve.' },
+    { e:'🔥', t:'CLOSE CALL',    m:'Five. Made it count.' },
+    { e:'🎲', t:'LAST PIXEL',    m:'Six. The wire. You held on.' },
+  ][guessCount - 1] : { e:'😔', t:'NEXT TIME', m:'It happens. Play again.' };
 
   el.innerHTML = `
     <div class="wlr-inner">
-      <div class="wlr-emoji">${b.emoji}</div>
-      <div class="wlr-badge">${b.badge}</div>
-      <div class="wlr-tagline">${b.msg}</div>
+      <div class="wlr-emoji">${badge.e}</div>
+      <div class="wlr-badge">${badge.t}</div>
+      <div class="wlr-tagline">${badge.m}</div>
       <div class="wlr-word">The word was <span class="wlr-answer">${answer}</span></div>
-      ${flavour ? `<div class="wlr-flavour">${flavour}</div>` : ''}
-      <div class="wlr-stats">
-        <div class="wlrs-box"><span>${s.played}</span><small>Played</small></div>
-        <div class="wlrs-box"><span>${pct}%</span><small>Win%</small></div>
-        <div class="wlrs-box"><span>${s.streak}</span><small>Streak 🔥</small></div>
-        <div class="wlrs-box"><span>${s.maxStreak}</span><small>Best</small></div>
+      ${answerFlavour ? `<div class="wlr-flavour">"${answerFlavour}"</div>` : ''}
+      <div class="wlr-cat-tag" style="background:${catCfg.color}22;border-color:${catCfg.color}44;color:${catCfg.color}">${catCfg.label}</div>
+      <div class="wlr-actions">
+        <button class="btn btn-primary wlr-btn" id="wlPlayAgainBtn">Play Again →</button>
+        <button class="btn btn-ghost wlr-btn" id="wlChangeCatBtn">Change Category</button>
       </div>
-      <button class="wlr-share" id="wlShareBtn">Share 📋</button>
+      <button class="wlr-share-sm" id="wlShareBtn">Share result 📋</button>
     </div>
   `;
 
   setTimeout(() => el.classList.add('wl-result--visible'), 200);
-  el.querySelector('#wlShareBtn')?.addEventListener('click', () => shareResult(won, attempts));
-}
 
-function shareResult(won, attempts) {
-  const lines = [];
-  for (let r = 0; r < (won ? attempts : MAX_GUESSES); r++) {
-    const g = guesses[r]; if (!g) break;
-    lines.push(evaluate(g, answer).map(s => s === 'correct' ? '🟩' : s === 'present' ? '🟨' : '⬛').join(''));
-  }
-  const txt = `DIVYADLE ${won ? attempts : 'X'}/${MAX_GUESSES}\n\n${lines.join('\n')}\ncdivya.pocketprojects.in`;
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(txt)
+  el.querySelector('#wlPlayAgainBtn')?.addEventListener('click', () => {
+    el.classList.remove('wl-result--visible');
+    setTimeout(() => startRound(answerCat), 300);
+  });
+  el.querySelector('#wlChangeCatBtn')?.addEventListener('click', () => {
+    el.classList.remove('wl-result--visible');
+    setTimeout(() => showCategoryPicker(), 300);
+  });
+  el.querySelector('#wlShareBtn')?.addEventListener('click', () => {
+    const rows = guesses.map(g =>
+      evaluate(g, answer).map(s => s==='correct'?'🟩':s==='present'?'🟨':'⬛').join('')
+    );
+    const txt = `DIVYADLE ∞\n${catCfg.label} · ${won ? guessCount : 'X'}/${MAX_GUESSES}\n\n${rows.join('\n')}\ncdivya.pocketprojects.in`;
+    navigator.clipboard?.writeText(txt)
       .then(() => toast('Copied! ✓', 1400))
-      .catch(() => { try { fallbackCopy(txt); toast('Copied! ✓', 1400); } catch { toast(txt, 5000); } });
-  } else { try { fallbackCopy(txt); toast('Copied! ✓', 1400); } catch { toast(txt, 5000); } }
-}
-
-function fallbackCopy(txt) {
-  const ta = document.createElement('textarea');
-  ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;';
-  document.body.appendChild(ta); ta.focus(); ta.select();
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-}
-
-// ─── Input ─────────────────────────────────────────────────────────────────────
-function submitGuess() {
-  if (currentStr.length < WORD_LEN) {
-    shakeRow(currentRow);
-    toast('Need 5 letters');
-    return;
-  }
-  const upper = currentStr.toUpperCase();
-  if (!VALID.has(upper)) {
-    shakeRow(currentRow);
-    toast('Not a word I know — try a design term');
-    return;
-  }
-
-  guesses[currentRow] = upper;
-  const result = evaluate(upper, answer);
-
-  revealRow(currentRow, result, () => {
-    const won = result.every(r => r === 'correct');
-    if (won) {
-      bounceRow(currentRow);
-      setTimeout(() => showResult(true, currentRow + 1), 500);
-      gameOver = true;
-    } else if (currentRow + 1 >= MAX_GUESSES) {
-      setTimeout(() => { toast(`The word was ${answer}`, 3200); showResult(false, 0); }, 400);
-      gameOver = true;
-    } else {
-      // Encouragement at guess 3 → 4 and 4 → 5
-      if (currentRow === 3) {
-        setTimeout(() => toast(ENCOURAGE_4[Math.floor(Math.random() * ENCOURAGE_4.length)], 2200), 600);
-      } else if (currentRow === 4) {
-        setTimeout(() => toast(ENCOURAGE_5[Math.floor(Math.random() * ENCOURAGE_5.length)], 2400), 600);
-      }
-    }
-    currentRow++;
-    currentStr = '';
-    updateGuessCounter();
+      .catch(() => toast(txt, 5000));
   });
 }
 
+// ─── Category picker ──────────────────────────────────────────────────────────
+function showCategoryPicker() {
+  if (!rootEl) return;
+  const seen = sessionStorage.getItem('divyadle_seen');
+
+  const howToHTML = !seen ? `
+    <div class="wl-quick-rules">
+      <p>Guess the <strong>5-letter word</strong> in <strong>6 tries</strong>. After each guess:</p>
+      <div class="wl-rule-row"><div class="wl-demo-tile wl-correct">A</div><span><strong>Green</strong> = right letter, right spot</span></div>
+      <div class="wl-rule-row"><div class="wl-demo-tile wl-present">B</div><span><strong>Yellow</strong> = right letter, wrong spot</span></div>
+      <div class="wl-rule-row"><div class="wl-demo-tile wl-absent">C</div><span><strong>Grey</strong> = not in the word</span></div>
+      <p class="wl-tip">💡 Start with <strong>RAISE</strong> or <strong>CRANE</strong> — covers the most common letters.</p>
+    </div>
+  ` : '';
+
+  rootEl.innerHTML = `
+    <div class="wl-picker">
+      <div class="wl-picker-header">
+        <h2 class="wl-title">DIVYADLE ∞</h2>
+        <div class="wl-session-ctr">
+          <span class="wl-sc-item">✅ ${sessionWins} solved</span>
+          <span class="wl-sc-item">🔥 ${sessionStreak} streak</span>
+        </div>
+        <p class="wl-picker-sub">Choose a category. Guess the word. Play forever.</p>
+      </div>
+      ${howToHTML}
+      <div class="wl-cat-grid">
+        ${Object.entries(CATEGORIES).map(([key, cfg]) => `
+          <button class="wl-cat-card" data-cat="${key}" style="--cc:${cfg.color}">
+            <span class="wl-cat-label">${cfg.label}</span>
+            <span class="wl-cat-desc">${cfg.desc}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  sessionStorage.setItem('divyadle_seen', '1');
+
+  rootEl.querySelectorAll('.wl-cat-card').forEach(btn => {
+    btn.addEventListener('click', () => startRound(btn.dataset.cat));
+  });
+}
+
+// ─── Round ────────────────────────────────────────────────────────────────────
+function startRound(cat) {
+  answerCat  = cat || 'random';
+  const entry = pickWord(answerCat);
+  answer        = entry[0];
+  answerFlavour = entry[1] || '';
+  usedWords.add(answer);
+  guesses    = [];
+  currentRow = 0;
+  currentStr = '';
+  gameOver   = false;
+
+  const catCfg = CATEGORIES[answerCat] || CATEGORIES.random;
+
+  let grid = '<div class="wl-grid">';
+  for (let r = 0; r < MAX_GUESSES; r++) {
+    grid += '<div class="wl-row">';
+    for (let c = 0; c < WORD_LEN; c++) grid += `<div class="wl-tile" data-r="${r}" data-c="${c}"></div>`;
+    grid += '</div>';
+  }
+  grid += '</div>';
+
+  const rows = ['QWERTYUIOP','ASDFGHJKL','⌫ZXCVBNM↵'];
+  let kb = '<div class="wl-kb">';
+  for (const row of rows) {
+    kb += '<div class="wl-kb-row">';
+    for (const ch of [...row]) {
+      const wide = (ch==='⌫'||ch==='↵') ? ' wl-key--wide' : '';
+      kb += `<button class="wl-key${wide}" data-k="${ch}">${ch==='↵'?'ENTER':ch}</button>`;
+    }
+    kb += '</div>';
+  }
+  kb += '</div>';
+
+  rootEl.innerHTML = `
+    <div class="wl-game-header">
+      <div class="wl-game-title-row">
+        <h2 class="wl-title">DIVYADLE ∞</h2>
+        <button class="wl-cat-pill" id="wlChangeCat" style="--cc:${catCfg.color}">${catCfg.label}</button>
+      </div>
+      <div class="wl-game-sub">
+        <span class="wl-session-mini">✅ ${sessionWins} &nbsp; 🔥 ${sessionStreak}</span>
+        <span class="wl-guess-ctr">Guess 1 of 6</span>
+        <button class="wl-help-sm" id="wlHelpBtn">?</button>
+      </div>
+    </div>
+
+    <div class="wl-howto" id="wlHowTo">
+      <div class="wl-howto-inner">
+        <p class="wl-howto-rule">Guess the 5-letter word in 6 tries. All words fit the chosen category.</p>
+        <div class="wl-howto-legend">
+          <div class="wl-howto-row"><div class="wl-demo-tile wl-correct">G</div><div><strong>Green</strong> — right letter, right position</div></div>
+          <div class="wl-howto-row"><div class="wl-demo-tile wl-present">R</div><div><strong>Yellow</strong> — letter in word, wrong position</div></div>
+          <div class="wl-howto-row"><div class="wl-demo-tile wl-absent">X</div><div><strong>Grey</strong> — letter not in the word</div></div>
+        </div>
+        <p class="wl-howto-tip">💡 Start with RAISE or CRANE to cover the most common letters first.</p>
+      </div>
+    </div>
+
+    <div class="wl-toast" aria-live="assertive"></div>
+    ${grid}
+    <div class="wl-result" aria-live="polite"></div>
+    ${kb}
+  `;
+
+  // Help toggle
+  const helpBtn = rootEl.querySelector('#wlHelpBtn');
+  const howToEl = rootEl.querySelector('#wlHowTo');
+  helpBtn?.addEventListener('click', () => {
+    const open = howToEl?.classList.toggle('wl-howto--open');
+    if (helpBtn) helpBtn.textContent = open ? '✕' : '?';
+  });
+
+  // Category change
+  rootEl.querySelector('#wlChangeCat')?.addEventListener('click', () => showCategoryPicker());
+
+  // Keyboard
+  rootEl.querySelectorAll('.wl-key').forEach(btn => {
+    btn.addEventListener('click', () => handleKey(btn.dataset.k));
+  });
+
+  updateCtr();
+}
+
+// ─── Input ────────────────────────────────────────────────────────────────────
 function handleKey(k) {
   if (gameOver) return;
   k = k.toUpperCase();
@@ -388,98 +645,34 @@ function handleKey(k) {
   }
 }
 
-// ─── Build HTML ────────────────────────────────────────────────────────────────
-function buildHTML(entry) {
-  const [word, category] = entry;
+function submitGuess() {
+  if (currentStr.length < WORD_LEN) { shakeRow(currentRow); toast('Need 5 letters'); return; }
+  const upper = currentStr.toUpperCase();
+  if (!VALID.has(upper)) { shakeRow(currentRow); toast('Not a recognised word — try again'); return; }
 
-  let grid = '<div class="wl-grid">';
-  for (let r = 0; r < MAX_GUESSES; r++) {
-    grid += '<div class="wl-row">';
-    for (let c = 0; c < WORD_LEN; c++) grid += `<div class="wl-tile" data-r="${r}" data-c="${c}"></div>`;
-    grid += '</div>';
-  }
-  grid += '</div>';
+  guesses[currentRow] = upper;
+  const result = evaluate(upper, answer);
 
-  const rows = ['QWERTYUIOP', 'ASDFGHJKL', '⌫ZXCVBNM↵'];
-  let kb = '<div class="wl-kb">';
-  for (const row of rows) {
-    kb += '<div class="wl-kb-row">';
-    for (const ch of [...row]) {
-      const wide  = (ch === '⌫' || ch === '↵') ? ' wl-key--wide' : '';
-      const label = ch === '↵' ? 'ENTER' : ch;
-      kb += `<button class="wl-key${wide}" data-k="${ch}">${label}</button>`;
+  revealRow(currentRow, result, () => {
+    const won = result.every(r => r === 'correct');
+    if (won) {
+      bounceRow(currentRow);
+      gameOver = true;
+      setTimeout(() => showResult(true, currentRow + 1), 600);
+    } else if (currentRow + 1 >= MAX_GUESSES) {
+      gameOver = true;
+      setTimeout(() => { toast(`The word was ${answer}`, 2800); showResult(false, 0); }, 400);
+    } else {
+      if (currentRow === 3) setTimeout(() => toast(NEAR_MISS[Math.floor(Math.random()*NEAR_MISS.length)], 2200), 500);
+      if (currentRow === 4) setTimeout(() => toast(LAST_CHANCE[Math.floor(Math.random()*LAST_CHANCE.length)], 2400), 500);
     }
-    kb += '</div>';
-  }
-  kb += '</div>';
-
-  // How-to panel — detailed, with live legend dots
-  const howTo = `
-    <div class="wl-howto" id="wlHowTo">
-      <div class="wl-howto-inner">
-        <p class="wl-howto-rule">
-          Guess the 5-letter word in 6 tries. Every word is from <strong>Divya's world</strong> — design, photography, art, typography. After each guess, the tiles colour-code your result.
-        </p>
-        <div class="wl-howto-legend">
-          <div class="wl-howto-row">
-            <div class="wl-demo-tile wl-correct">G</div>
-            <div>
-              <strong>Green</strong> — right letter, right position
-            </div>
-          </div>
-          <div class="wl-howto-row">
-            <div class="wl-demo-tile wl-present">R</div>
-            <div>
-              <strong>Yellow</strong> — letter is in the word, wrong position
-            </div>
-          </div>
-          <div class="wl-howto-row">
-            <div class="wl-demo-tile wl-absent">X</div>
-            <div>
-              <strong>Grey</strong> — letter is not in the word at all
-            </div>
-          </div>
-        </div>
-        <div class="wl-howto-example">
-          <p class="wl-howto-eg-label">Example — guessing LAYER:</p>
-          <div class="wl-howto-demo-row">
-            <div class="wl-demo-tile wl-correct">L</div>
-            <div class="wl-demo-tile wl-absent">A</div>
-            <div class="wl-demo-tile wl-present">Y</div>
-            <div class="wl-demo-tile wl-correct">E</div>
-            <div class="wl-demo-tile wl-absent">R</div>
-          </div>
-          <p class="wl-howto-eg-note">
-            <strong>L</strong> and <strong>E</strong> are in the right positions. <strong>Y</strong> is in the word but in a different spot. <strong>A</strong> and <strong>R</strong> are not in the word.
-          </p>
-        </div>
-        <p class="wl-howto-tip">💡 Tip: start with a word that covers lots of common letters — RAISE, STARE, CRANE — then use what you know.</p>
-      </div>
-    </div>
-  `;
-
-  return `
-    <div class="wl-header">
-      <div class="wl-title-row">
-        <h2 class="wl-title">DIVYADLE</h2>
-        <button class="wl-help-btn" id="wlHelpBtn" aria-label="How to play">?</button>
-      </div>
-      <p class="wl-sub">
-        <span class="wl-category">Category: <strong>${category}</strong></span>
-        <span class="wl-day-sep">·</span>
-        <span id="wlDayNum"></span>
-      </p>
-    </div>
-    ${howTo}
-    <div class="wl-toast" aria-live="assertive"></div>
-    ${grid}
-    <div class="wl-guess-ctr" aria-live="polite">1 of ${MAX_GUESSES}</div>
-    ${kb}
-    <div class="wl-result" aria-live="polite"></div>
-  `;
+    currentRow++;
+    updateCtr();
+    currentStr = '';
+  });
 }
 
-// ─── Public API ────────────────────────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 export function initWordle() {
   const card     = document.getElementById('openWordleCard');
   const modal    = document.getElementById('wordleModal');
@@ -492,75 +685,34 @@ export function initWordle() {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    startGame(content);
+    rootEl = content;
+    showCategoryPicker();
+    wireKeyboard();
   }
   function closeModal() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    endGame();
+    if (_keyHandler) { document.removeEventListener('keydown', _keyHandler); _keyHandler = null; }
   }
 
   card.addEventListener('click', openModal);
-  card.querySelector('.gc-btn')?.addEventListener('click', (e) => { e.stopPropagation(); openModal(); });
+  card.querySelector('.gc-btn')?.addEventListener('click', e => { e.stopPropagation(); openModal(); });
   closeBtn?.addEventListener('click', closeModal);
   overlay?.addEventListener('click', closeModal);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
 }
 
-function startGame(container) {
-  rootEl      = container;
-  answerEntry = getDailyEntry();
-  answer      = answerEntry[0];
-  guesses     = [];
-  currentRow  = 0;
-  currentStr  = '';
-  gameOver    = false;
-
-  rootEl.innerHTML = buildHTML(answerEntry);
-
-  // Day counter
-  const dayNumEl = rootEl.querySelector('#wlDayNum');
-  if (dayNumEl) {
-    const epoch = Date.UTC(1999, 4, 11);
-    const today = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
-    const day   = Math.floor((today - epoch) / 86400000);
-    dayNumEl.textContent = `Day ${day.toLocaleString()} of being Divya`;
-  }
-
-  // How-to toggle
-  const helpBtn = rootEl.querySelector('#wlHelpBtn');
-  const howToEl = rootEl.querySelector('#wlHowTo');
-  if (helpBtn && howToEl) {
-    // Auto-open on first ever play
-    const seen = sessionStorage.getItem('divyadle_seen');
-    if (!seen) {
-      howToEl.classList.add('wl-howto--open');
-      helpBtn.textContent = '✕';
-      sessionStorage.setItem('divyadle_seen', '1');
-    }
-    helpBtn.addEventListener('click', () => {
-      const open = howToEl.classList.toggle('wl-howto--open');
-      helpBtn.textContent = open ? '✕' : '?';
-    });
-  }
-
-  // Keyboard
-  rootEl.querySelectorAll('.wl-key').forEach(btn => {
-    btn.addEventListener('click', () => handleKey(btn.dataset.k));
-  });
-
+function wireKeyboard() {
   if (_keyHandler) document.removeEventListener('keydown', _keyHandler);
-  _keyHandler = (e) => {
+  _keyHandler = e => {
     if (!document.getElementById('wordleModal')?.classList.contains('open')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Enter')     handleKey('ENTER');
+    if (e.key === 'Enter')         handleKey('ENTER');
     else if (e.key === 'Backspace') handleKey('BACKSPACE');
     else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key);
   };
   document.addEventListener('keydown', _keyHandler);
-}
-
-function endGame() {
-  if (_keyHandler) { document.removeEventListener('keydown', _keyHandler); _keyHandler = null; }
 }
