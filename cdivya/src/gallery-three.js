@@ -119,13 +119,30 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
     return url;
   }
 
+  let started = false;
+  function tryStart() {
+    if (started) return;
+    if (!textures.length) {
+      // Nothing loaded at all — add fallback textures then start
+      for (let l = 0; l < DEPTH_LAYERS; l++) textures.push(fallbackTexture(l));
+    }
+    started = true;
+    initSprites();
+  }
+
+  // Hard failsafe: start after 8s no matter what
+  const failsafeTimer = setTimeout(tryStart, 8000);
+
   function onLoaded(tex) {
     textures.push(tex);
     loadedCount++;
     const pct = Math.round((loadedCount / TOTAL) * 100);
     if (loadingBar) loadingBar.style.width = `${pct}%`;
     if (loadingTxt) loadingTxt.textContent = `Loading… ${pct}%`;
-    if (loadedCount === TOTAL) initSprites();
+    if (loadedCount === TOTAL) {
+      clearTimeout(failsafeTimer);
+      tryStart();
+    }
   }
 
   for (let l = 0; l < DEPTH_LAYERS; l++) {

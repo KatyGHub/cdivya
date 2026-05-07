@@ -3,13 +3,7 @@
  * Fetches images from Supabase bucket folder "home-floats"
  * Images drift slowly, never interfere with content, live behind everything
  */
-import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-const FLOAT_FOLDER = 'home-floats'; // sub-folder inside your gallery bucket
-const FLOAT_BUCKET = import.meta.env.VITE_SUPABASE_BUCKET || 'gallery';
-const isConfigured = !!(SUPABASE_URL && SUPABASE_KEY);
+import { fetchFloatImages } from './supabase-images.js';
 
 // How many images to float simultaneously
 const MAX_FLOATS   = 14;

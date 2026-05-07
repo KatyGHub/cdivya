@@ -12,44 +12,67 @@ function getClient() {
   return _client;
 }
 
+// ── Hard timeout wrapper ────────────────────────────────────────────────────
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise(resolve => setTimeout(() => resolve(fallback), ms))
+  ]);
+}
+
+// ── Main fetch — returns public URLs instantly, no blob downloads ───────────
 export async function fetchGalleryImages() {
   if (!isConfigured) return [];
 
   const sb = getClient();
 
-  console.log(`[gallery] Listing bucket "${BUCKET}"…`);
-  const { data: files, error } = await sb.storage
-    .from(BUCKET)
-    .list('', { limit: 1000 });
+  // Step 1: list files — hard 6s timeout, return [] if Supabase is slow
+  const listResult = await withTimeout(
+    sb.storage.from(BUCKET).list('', { limit: 200, sortBy: { column: 'name', order: 'asc' } }),
+    6000,
+    { data: null, error: { message: 'Timeout listing bucket' } }
+  );
 
-  if (error) { console.error('[gallery] List error:', error.message); return []; }
+  const { data: files, error } = listResult;
+  if (error) { console.warn('[gallery] List error:', error.message); return []; }
   if (!files?.length) { console.warn('[gallery] Bucket empty.'); return []; }
 
   const imageFiles = files
     .filter(f => f.name && /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name))
     .map(f => f.name);
 
-  console.log(`[gallery] ${imageFiles.length} images. Downloading as blobs…`);
+  if (!imageFiles.length) return [];
 
-  // Download each file via the Supabase SDK (handles encoding internally)
-  // Convert to blob: URLs — these are same-origin so WebGL never taints
-  const results = await Promise.all(
-    imageFiles.map(async (name) => {
-      try {
-        const { data, error: dlErr } = await sb.storage.from(BUCKET).download(name);
-        if (dlErr || !data) {
-          console.warn('[gallery] Download failed:', name, dlErr?.message);
-          return null;
-        }
-        return URL.createObjectURL(data);
-      } catch (e) {
-        console.warn('[gallery] Blob error:', name, e.message);
-        return null;
-      }
-    })
+  // Step 2: get public URLs — this is SYNCHRONOUS, zero network calls
+  // Supabase constructs the URL client-side. No waiting, no downloads.
+  const urls = imageFiles.map(name => {
+    const { data } = sb.storage.from(BUCKET).getPublicUrl(name);
+    return data?.publicUrl || null;
+  }).filter(Boolean);
+
+  console.log(`[gallery] ${urls.length} public URLs ready (instant).`);
+  return urls;
+}
+
+// ── Floats fetch (home-floats sub-folder) — same instant approach ───────────
+export async function fetchFloatImages() {
+  if (!isConfigured) return [];
+  const sb = getClient();
+
+  const listResult = await withTimeout(
+    sb.storage.from(BUCKET).list('home-floats', { limit: 60 }),
+    4000,
+    { data: null, error: { message: 'Timeout' } }
   );
 
-  const urls = results.filter(Boolean);
-  console.log(`[gallery] ${urls.length} blob URLs ready.`);
-  return urls;
+  const { data: files, error } = listResult;
+  if (error || !files?.length) return [];
+
+  return files
+    .filter(f => f.name && /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name))
+    .map(f => {
+      const { data } = sb.storage.from(BUCKET).getPublicUrl(`home-floats/${f.name}`);
+      return data?.publicUrl || null;
+    })
+    .filter(Boolean);
 }
