@@ -340,7 +340,7 @@ function buildHTML() {
         <h2 class="wl-title">DIVYADLE</h2>
         <button class="wl-help-btn" id="wlHelpBtn" aria-label="How to play">?</button>
       </div>
-      <p class="wl-sub">Design vocabulary · 5 letters · 6 guesses · daily word</p>
+      <p class="wl-sub">Design vocabulary · 5 letters · 6 guesses · <span id="wlDayNum"></span></p>
     </div>
     ${howTo}
     <div class="wl-toast" aria-live="assertive"></div>
@@ -388,6 +388,15 @@ function startGame(container) {
   gameOver   = false;
 
   rootEl.innerHTML = buildHTML();
+
+  // Day counter
+  const dayNumEl = rootEl.querySelector('#wlDayNum');
+  if (dayNumEl) {
+    const epoch = Date.UTC(2025, 0, 1);
+    const today = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    const day   = Math.floor((today - epoch) / 86400000) + 1;
+    dayNumEl.textContent = `Puzzle #${day}`;
+  }
 
   // How-to-play toggle
   const helpBtn = rootEl.querySelector('#wlHelpBtn');

@@ -421,7 +421,11 @@ body.home { overflow:hidden; height:100dvh; }
   transition:transform var(--t) var(--spring), border-color var(--t), background var(--t);
   text-decoration:none; color:var(--text);
 }
-.portal:hover { transform:translateY(-5px); border-color:var(--rose); background:rgba(255,45,85,.08); }
+.portal:hover { transform:translateY(-5px) scale(1.02); box-shadow: 0 12px 48px rgba(0,0,0,.55); }
+.portal[href="/games"]:hover    { border-color:rgba(0,255,189,.35); background:rgba(0,255,189,.04); box-shadow:0 12px 48px rgba(0,0,0,.6),0 0 32px rgba(0,255,189,.10); }
+.portal[href="/gallery"]:hover  { border-color:rgba(191,95,255,.35); background:rgba(191,95,255,.04); box-shadow:0 12px 48px rgba(0,0,0,.6),0 0 32px rgba(191,95,255,.10); }
+.portal[href="/carousel"]:hover { border-color:rgba(255,45,85,.35);  background:rgba(255,45,85,.04);  box-shadow:0 12px 48px rgba(0,0,0,.6),0 0 32px rgba(255,45,85,.10); }
+.portal[href="/story"]:hover    { border-color:rgba(255,184,0,.35);  background:rgba(255,184,0,.04);  box-shadow:0 12px 48px rgba(0,0,0,.6),0 0 32px rgba(255,184,0,.10); }
 .portal-icon  { font-size:1.8rem; line-height:1; }
 .portal-label { font-family:var(--fH); font-size:.92rem; font-weight:700; }
 .portal-sub   { font-size:.7rem; color:var(--muted); text-align:center; }
@@ -2506,4 +2510,121 @@ body.home { overflow:hidden; height:100dvh; }
   .cr3-img-frame { max-height: 40vh; }
   .cr3-text { font-size: clamp(1.25rem, 5vw, 1.8rem); min-height: 3rem; }
   .cr3-index { margin-bottom: 1.25rem; }
+}
+
+/* ═══════════════════════════════════════════════════
+   BIRTHDAY SPLASH SCREEN
+   ═══════════════════════════════════════════════════ */
+.bd-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: #080808;
+  flex-direction: column;
+}
+.bd-splash.bd-visible {
+  display: flex;
+  animation: bdFadeIn .5s ease forwards;
+}
+.bd-splash.bd-exit {
+  animation: bdFadeOut .85s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes bdFadeIn  { from{opacity:0} to{opacity:1} }
+@keyframes bdFadeOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.03)} }
+
+.bd-overlay {
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(ellipse at 20% 40%, rgba(255,45,85,.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 60%, rgba(191,95,255,.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 20%, rgba(0,255,189,.06) 0%, transparent 60%);
+}
+
+.bd-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  animation: bdSlideUp .8s cubic-bezier(.22,1,.36,1) .2s both;
+}
+@keyframes bdSlideUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.bd-balloons {
+  font-size: 3.5rem;
+  line-height: 1;
+  animation: bdBounce 2s ease-in-out infinite;
+}
+@keyframes bdBounce {
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-12px); }
+}
+
+.bd-from {
+  font-family: var(--fH);
+  font-size: .78rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  margin: 0;
+}
+
+.bd-wish {
+  font-family: var(--fD);
+  font-size: clamp(3.5rem, 10vw, 8rem);
+  line-height: .95;
+  letter-spacing: .03em;
+  color: transparent;
+  background: linear-gradient(135deg, #FF2D55 0%, #BF5FFF 45%, #00FFBD 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  margin: 0;
+  animation: bdShimmer 4s ease infinite;
+  background-size: 200% 200%;
+}
+@keyframes bdShimmer {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+
+.bd-sub {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: rgba(255,255,255,.45);
+  margin: 0;
+  animation: bdFadeIn .8s ease 1.2s both;
+}
+
+.bd-enter {
+  font-family: var(--fH);
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--text);
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,.18);
+  border-radius: var(--r);
+  padding: .7rem 2rem;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .2s var(--spring);
+  animation: bdFadeIn .8s ease 1.8s both;
+}
+.bd-enter:hover {
+  border-color: var(--mint);
+  background: rgba(0,255,189,.06);
+  transform: scale(1.04);
+}
+
+/* DIVYADLE day tag */
+#wlDayNum {
+  color: var(--mint);
+  font-weight: 600;
 }

@@ -25,7 +25,7 @@ const WORD_DATA = [
   { id:1,  word:'DESIGN',  row:0, col:4, dir:'across', clue:'What Divya does best. And second best. And third.' },
   { id:2,  word:'VIBES',   row:2, col:4, dir:'across', clue:'What she brings into every room, unannounced.' },
   { id:3,  word:'STYLE',   row:3, col:2, dir:'across', clue:"She has it. You know it. Please don't compete." },
-  { id:4,  word:'NISHI',   row:5, col:3, dir:'across', clue:'The person whose calls are forever dodged on this page.' },
+  { id:4,  word:'NISHI',   row:5, col:3, dir:'across', clue:'Her partner in crime. Always answering the phone when Divya calls.' },
   { id:5,  word:'BRAND',   row:6, col:0, dir:'across', clue:"She'll fix yours. Unprompted. Against your will." },
   { id:6,  word:'PIXEL',   row:7, col:0, dir:'across', clue:'The smallest unit of her obsession.' },
   { id:7,  word:'PHOTO',   row:8, col:0, dir:'across', clue:"She takes 40 before you've even smiled." },
@@ -253,7 +253,9 @@ export function initCrossword() {
         else if (inp.value) { cell.classList.add('wrong'); }
       });
     });
-    if (statusEl) statusEl.textContent = correct===total ? '🎉 Correct! Divya is shook.' : `${correct}/${total} correct. Keep going.`;
+    const allDone = correct === total;
+    if (statusEl) statusEl.textContent = allDone ? '🎉 Divya got them all. Naturally.' : `${correct}/${total} correct. Keep going.`;
+    if (allDone) fireCrosswordConfetti();
   }
 
   function clearBoard() {
@@ -275,4 +277,33 @@ export function initCrossword() {
 
   renderGrid();
   renderClues();
+}
+
+function fireCrosswordConfetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const COLS = ['#00FFBD','#FF2D55','#BF5FFF','#FFB800','#FF8C42','#fff'];
+  const pts = Array.from({length:120},()=>({
+    x:Math.random()*canvas.width, y:-30-Math.random()*100,
+    vx:(Math.random()-.5)*7, vy:Math.random()*3+2,
+    rot:Math.random()*360, spin:(Math.random()-.5)*12,
+    w:Math.random()*10+5, h:Math.random()*6+3,
+    color:COLS[Math.floor(Math.random()*COLS.length)],
+  }));
+  let alive = true;
+  setTimeout(()=>{alive=false;setTimeout(()=>canvas.remove(),500);},3500);
+  (function frame(){
+    if(!alive)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.07;p.rot+=p.spin;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-p.y/canvas.height*1.3);
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
+    }
+    requestAnimationFrame(frame);
+  })();
 }

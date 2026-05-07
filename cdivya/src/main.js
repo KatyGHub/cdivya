@@ -75,7 +75,31 @@ function updateGreeting() {
   pill.textContent = greet;
 }
 
+function initSplash() {
+  const splash  = document.getElementById('bdSplash');
+  const enterBtn = document.getElementById('bdEnter');
+  if (!splash) return;
+  // Only show once per session
+  if (sessionStorage.getItem('cd_splashed')) {
+    splash.style.display = 'none';
+    return;
+  }
+  splash.setAttribute('aria-hidden', 'false');
+  splash.classList.add('bd-visible');
+  function dismiss() {
+    splash.classList.add('bd-exit');
+    setTimeout(() => { splash.style.display = 'none'; }, 900);
+    sessionStorage.setItem('cd_splashed', '1');
+  }
+  enterBtn?.addEventListener('click', dismiss);
+  // Also dismiss on any key
+  document.addEventListener('keydown', (e) => {
+    if (!sessionStorage.getItem('cd_splashed') && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown')) dismiss();
+  }, { once: true });
+}
+
 async function bootstrap() {
+  initSplash();
   initCursor();
   initNav();
   initScrollReveal();

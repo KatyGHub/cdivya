@@ -75,6 +75,10 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
     return new THREE.CanvasTexture(c);
   }
 
+  // ── Textures array — must be declared before resize() references it ──────────
+  const textures = [];
+  let loadedCount = 0;
+
   // ── Resize (identical to CodePen) ───────────────────────────────────────────
   function resize() {
     const w = container.clientWidth, h = container.clientHeight;
@@ -101,8 +105,6 @@ export async function initGallery({ imageUrls, onReady, onEmpty }) {
 
   // ── Load textures via THREE.TextureLoader ────────────────────────────────────
   // Blob URLs are same-origin so TextureLoader works without CORS issues.
-  const textures = [];
-  let loadedCount = 0;
   const TOTAL = DEPTH_LAYERS * IMAGES_PER_LAYER;
 
   const loader = new THREE.TextureLoader();

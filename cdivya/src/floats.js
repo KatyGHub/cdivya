@@ -115,8 +115,29 @@ export async function initFloats() {
   container.className = 'hf-container';
   document.body.prepend(container);
 
-  const imgs = await fetchFloatImages();
-  if (!imgs.length) return; // nothing configured, silently skip
+  let imgs = await fetchFloatImages();
+
+  // If no Supabase images, generate abstract gradient shapes as fallback
+  if (!imgs.length) {
+    const pals = [
+      ['#160030','#BF5FFF'],['#001a22','#00FFBD'],['#200010','#FF2D55'],
+      ['#101000','#FFB800'],['#001428','#00FFBD'],['#0a000a','#BF5FFF'],
+      ['#001010','#00FFBD'],['#1a0008','#FF2D55'],['#080814','#4466FF'],
+      ['#1a0800','#FF8C42'],['#000a14','#00FFBD'],['#0a0020','#BF5FFF'],
+    ];
+    imgs = pals.map(([bg, ac]) => {
+      const cv = document.createElement('canvas');
+      cv.width = 240; cv.height = 320;
+      const ctx = cv.getContext('2d');
+      const g = ctx.createLinearGradient(0, 0, 240, 320);
+      g.addColorStop(0, bg); g.addColorStop(1, '#040404');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 240, 320);
+      const rg = ctx.createRadialGradient(120, 120, 0, 120, 120, 160);
+      rg.addColorStop(0, ac + '30'); rg.addColorStop(1, 'transparent');
+      ctx.fillStyle = rg; ctx.fillRect(0, 0, 240, 320);
+      return cv.toDataURL();
+    });
+  }
 
   // Shuffle
   const shuffled = [...imgs].sort(() => Math.random() - 0.5);
