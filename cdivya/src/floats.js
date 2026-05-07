@@ -9,32 +9,6 @@ import { fetchFloatImages } from './supabase-images.js';
 const MAX_FLOATS   = 14;
 const MIN_FLOATS   = 6;
 
-// ── Fetch images from the home-floats sub-folder ───────────────────────────
-async function fetchFloatImages() {
-  if (!isConfigured) return [];
-  try {
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: files, error } = await sb.storage
-      .from(FLOAT_BUCKET)
-      .list(FLOAT_FOLDER, { limit: 60 });
-    if (error || !files?.length) return [];
-    const imageFiles = files
-      .filter(f => f.name && /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name))
-      .map(f => `${FLOAT_FOLDER}/${f.name}`);
-    if (!imageFiles.length) return [];
-    const results = await Promise.all(
-      imageFiles.map(async (path) => {
-        try {
-          const { data, error: dlErr } = await sb.storage.from(FLOAT_BUCKET).download(path);
-          if (dlErr || !data) return null;
-          return URL.createObjectURL(data);
-        } catch { return null; }
-      })
-    );
-    return results.filter(Boolean);
-  } catch { return []; }
-}
-
 // ── Seeded random (so positions look intentional) ──────────────────────────
 function rng(seed) {
   let s = seed;

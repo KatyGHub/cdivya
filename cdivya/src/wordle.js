@@ -392,10 +392,11 @@ function startGame(container) {
   // Day counter
   const dayNumEl = rootEl.querySelector('#wlDayNum');
   if (dayNumEl) {
-    const epoch = Date.UTC(2025, 0, 1);
+    // Days since Divya's birthday — May 11, 1999
+    const epoch = Date.UTC(1999, 4, 11); // month is 0-indexed, so 4 = May
     const today = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
-    const day   = Math.floor((today - epoch) / 86400000) + 1;
-    dayNumEl.textContent = `Puzzle #${day}`;
+    const day   = Math.floor((today - epoch) / 86400000);
+    dayNumEl.textContent = `Day ${day.toLocaleString()} of being Divya`;
   }
 
   // How-to-play toggle
