@@ -21,20 +21,27 @@ function initBioSection() {
   // The paragraph whose vertical center is closest to the viewport center gets 'focused'.
   // Adjacent ones get 'nearby'. All others stay dim.
   function updateSpotlight() {
-    const viewMid = window.innerHeight / 2;
+    // Use 40% from top on mobile (where viewport is shorter),
+    // 50% (center) on desktop — stops two paragraphs activating simultaneously
+    const focalPoint = window.innerHeight * (window.innerWidth < 768 ? 0.38 : 0.50);
 
     let closestDist = Infinity;
     let closestIdx  = 0;
 
     paras.forEach((el, i) => {
-      const rect = el.getBoundingClientRect();
+      const rect  = el.getBoundingClientRect();
       const elMid = rect.top + rect.height / 2;
-      const dist  = Math.abs(elMid - viewMid);
+      const dist  = Math.abs(elMid - focalPoint);
       if (dist < closestDist) { closestDist = dist; closestIdx = i; }
     });
 
+    // Only mark focused if it's actually near the focal point (not off-screen)
+    const focusedRect = paras[closestIdx]?.getBoundingClientRect();
+    const onScreen = focusedRect && focusedRect.bottom > 0 && focusedRect.top < window.innerHeight;
+
     paras.forEach((el, i) => {
       el.classList.remove('focused', 'nearby');
+      if (!onScreen) return;
       const diff = Math.abs(i - closestIdx);
       if (diff === 0) el.classList.add('focused');
       else if (diff === 1) el.classList.add('nearby');

@@ -232,7 +232,21 @@ function shareResult(won, attempts) {
     lines.push(evaluate(g, answer).map(s => s === 'correct' ? '🟩' : s === 'present' ? '🟨' : '⬛').join(''));
   }
   const txt = `DIVYADLE ${won ? attempts : 'X'}/${MAX_GUESSES}\n\n${lines.join('\n')}`;
-  navigator.clipboard?.writeText(txt).then(() => toast('Copied! ✓', 1400));
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(txt)
+      .then(() => toast('Copied! ✓', 1400))
+      .catch(() => {
+        // Clipboard API denied (e.g. no user gesture on mobile) — use prompt fallback
+        const ta = document.createElement('textarea');
+        ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); toast('Copied! ✓', 1400); }
+        catch { toast(txt, 5000); }
+        document.body.removeChild(ta);
+      });
+  } else {
+    toast(txt, 5000);
+  }
 }
 
 // ─── Input ─────────────────────────────────────────────────────────────────────

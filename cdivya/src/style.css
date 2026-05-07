@@ -2014,6 +2014,7 @@ body.home { overflow:hidden; height:100dvh; }
   border-radius: 12px;
   overflow: hidden;
   opacity: 0;
+  aspect-ratio: 3 / 4;
   box-shadow: 0 8px 40px rgba(0,0,0,.55);
   transition: opacity 1.2s ease;
   animation: hfDrift var(--dur, 26s) ease-in-out var(--delay, 0s) infinite;
@@ -2021,7 +2022,7 @@ body.home { overflow:hidden; height:100dvh; }
 .hf-float.hf-loaded {
   opacity: .28;
 }
-.hf-float img {
+.hf-float img, .hf-float canvas {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -2531,9 +2532,10 @@ body.home { overflow:hidden; height:100dvh; }
 }
 .bd-splash.bd-exit {
   animation: bdFadeOut .85s cubic-bezier(.4,0,.2,1) forwards;
+  pointer-events: none;
 }
 @keyframes bdFadeIn  { from{opacity:0} to{opacity:1} }
-@keyframes bdFadeOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.03)} }
+@keyframes bdFadeOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.03);visibility:hidden} }
 
 .bd-overlay {
   position: absolute; inset: 0; z-index: -1;

@@ -408,7 +408,6 @@ export function initPuzzle() {
   const closeBtn = document.getElementById('puzzleClose');
   const openCard = document.getElementById('openPuzzleCard');
   const shuffBtn = document.getElementById('shuffleBtn');
-  const artBtn   = document.getElementById('artBtn');
   const board    = document.getElementById('puzzleBoard');
   const moveEl   = document.getElementById('moveCount');
   const timerEl  = document.getElementById('timerDisplay');

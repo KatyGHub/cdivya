@@ -5,7 +5,7 @@
 
 const TAB  = 0.28;   // tab height as fraction of edge length
 const NECK = 0.13;   // neck half-width fraction
-const SNAP = 26;     // snap trigger distance (px)
+let SNAP = 26;       // snap trigger distance — recalculated per puzzle in init()
 const SHADOW_NORM = { blur: 12, ox: 3, oy: 3, col: 'rgba(0,0,0,0.7)' };
 const SHADOW_HELD = { blur: 32, ox: 0, oy: 0, col: 'rgba(0,255,189,0.45)' };
 
@@ -140,6 +140,8 @@ export class JigsawPuzzle {
     this.pw = Math.min(maxW / this.cols, maxH / this.rows * imgRatio);
     this.ph = this.pw / imgRatio;
 
+    // Snap radius scales with piece size so small pieces still feel snappy
+    SNAP = Math.max(10, Math.min(26, this.pw * 0.18));
     this.originX = (this.W - this.pw * this.cols) / 2;
     this.originY = (this.H - this.ph * this.rows) / 2;
   }
@@ -236,7 +238,6 @@ export class JigsawPuzzle {
 
     // Pass 2a: 1.5px oversized unclipped fill — eliminates seam gaps
     const BLEED = 1.5;
-    const bx = imgX - BLEED * (this.pw / this.pw);  // = imgX - BLEED
     ctx.save();
     ctx.clip(piece.path);
     ctx.drawImage(this.image, imgX - BLEED, imgY - BLEED,

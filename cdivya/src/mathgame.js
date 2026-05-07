@@ -525,6 +525,7 @@ function bootUI(container) {
       <button class="btn btn-ghost btn-sm" id="m24UndoBtn">↩ Undo</button>
       <button class="btn btn-ghost btn-sm" id="m24HintBtn">💡 Hint (3)</button>
       <button class="btn btn-ghost btn-sm" id="m24SkipBtn">Skip ⏭</button>
+      <button class="btn btn-ghost btn-sm" id="m24LevelBtn">⚙ Level</button>
     </div>
 
     <div class="m24-flash" aria-live="assertive"></div>
@@ -538,6 +539,12 @@ function bootUI(container) {
   });
   rootEl.querySelector('#m24UndoBtn')?.addEventListener('click', doUndo);
   rootEl.querySelector('#m24HintBtn')?.addEventListener('click', doHint);
+  rootEl.querySelector('#m24LevelBtn')?.addEventListener('click', () => {
+    stopTimer();
+    score = 0; sessionStreak = 0; levelStreak = 0;
+    showLevelPicker(container);
+  });
+
   rootEl.querySelector('#m24SkipBtn')?.addEventListener('click', () => {
     rootEl.querySelector('.m24-result')?.classList.remove('visible');
     sessionStreak = 0; levelStreak = 0;
