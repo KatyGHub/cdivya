@@ -1342,9 +1342,7 @@ button:focus-visible, a:focus-visible { border-radius: 8px; }
   border-color: var(--sub);
   transform: scale(1.04);
 }
-.wl-tile.wl-correct  { background: var(--mint);  border-color: var(--mint);  color: #000; }
-.wl-tile.wl-present  { background: #FFB800;       border-color: #FFB800;      color: #000; }
-.wl-tile.wl-absent   { background: #2e2e2e;       border-color: #2e2e2e;      color: var(--sub); }
+/* tile colours now in flip section above */
 
 /* Animations */
 .wl-tile.wl-pop {
@@ -1366,19 +1364,23 @@ button:focus-visible, a:focus-visible { border-radius: 8px; }
 }
 
 .wl-tile.wl-flip-out {
-  animation: wlFlipOut .2s ease forwards;
+  animation: wlFlipOut .18s ease forwards;
 }
 @keyframes wlFlipOut {
   from { transform: scaleY(1); }
   to   { transform: scaleY(0); }
 }
 .wl-tile.wl-flip-in {
-  animation: wlFlipIn .2s ease forwards;
+  animation: wlFlipIn .18s ease both;
 }
 @keyframes wlFlipIn {
   from { transform: scaleY(0); }
   to   { transform: scaleY(1); }
 }
+/* Ensure coloured tiles always show their colour, even after animation class removal */
+.wl-tile.wl-correct { background: var(--mint)  !important; border-color: var(--mint)  !important; color: #000 !important; transform: scaleY(1); }
+.wl-tile.wl-present { background: #FFB800      !important; border-color: #FFB800      !important; color: #000 !important; transform: scaleY(1); }
+.wl-tile.wl-absent  { background: #2e2e2e      !important; border-color: #2e2e2e      !important; color: rgba(255,255,255,.45) !important; transform: scaleY(1); }
 
 .wl-tile.wl-bounce {
   animation: wlBounce .7s var(--spring);
@@ -2692,7 +2694,7 @@ html { scroll-behavior: smooth; }
 
 /* 7. Wordle tile text is too heavy for wrong state ─
    Absent tiles dim the letter slightly */
-.wl-tile.wl-absent { color: rgba(255,255,255,.45); }
+/* absent tile colour now in flip section */
 
 /* 8. Make 24 tile selection ring — thicker on hover */
 .m24-tile:hover:not(.m24-selected) {
