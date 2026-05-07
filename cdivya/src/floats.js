@@ -61,17 +61,22 @@ function makeFloat(src, index, total) {
   `;
 
   const img  = document.createElement('img');
-  img.src    = src;
-  img.alt    = '';
+  img.alt       = '';
   img.draggable = false;
-  img.loading = 'lazy';
-  el.appendChild(img);
 
-  // Fade in once loaded
-  img.addEventListener('load', () => {
+  // data: URLs are already in memory — load event fires before listener attaches.
+  // Detect upfront and add hf-loaded immediately; otherwise wait for network load.
+  if (src.startsWith('data:')) {
+    img.src = src;
     el.classList.add('hf-loaded');
-  });
+  } else {
+    img.loading = 'lazy';
+    img.addEventListener('load', () => el.classList.add('hf-loaded'));
+    img.addEventListener('error', () => el.classList.add('hf-loaded')); // show even on error
+    img.src = src;
+  }
 
+  el.appendChild(img);
   return el;
 }
 
