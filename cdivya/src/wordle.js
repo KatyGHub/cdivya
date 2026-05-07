@@ -403,8 +403,6 @@ const BANK = {
 
 };
 
-};
-
 // ─── Category config ───────────────────────────────────────────────────────────
 const CATEGORIES = {
   random:      { label: '🎲 Random',        color: 'var(--mint)',   desc: 'Anything goes. All categories.' },
