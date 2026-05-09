@@ -630,7 +630,32 @@ button:focus-visible, a:focus-visible { border-radius: 8px; }
   width:52px; height:52px; border-radius:8px; flex-shrink:0;
   background-size:cover; background-position:center;
   border:2px solid var(--border); box-shadow:0 0 14px rgba(191,95,255,.25);
+  cursor:zoom-in; transition:transform .25s var(--spring), box-shadow .25s;
+  position:relative; z-index:1;
 }
+.puzzle-preview:hover {
+  transform:scale(1.08);
+}
+/* Enlarged overlay on click */
+.puzzle-preview.pv-zoomed {
+  position:fixed;
+  width: min(220px, 38vw);
+  height: min(220px, 38vw);
+  border-radius:14px;
+  box-shadow:0 16px 60px rgba(0,0,0,.75), 0 0 0 2px var(--lilac);
+  cursor:zoom-out;
+  z-index:800;
+  transform:none;
+  transition:width .22s var(--spring), height .22s var(--spring),
+             border-radius .22s, box-shadow .22s;
+}
+.pv-backdrop {
+  position:fixed; inset:0; z-index:799;
+  background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
+  cursor:zoom-out;
+  animation:pvFadeIn .18s ease forwards;
+}
+@keyframes pvFadeIn { from{opacity:0} to{opacity:1} }
 .puzzle-meta-text { flex:1; min-width:0; }
 .p-art-label { font-size:.7rem; color:var(--sub); font-family:var(--fH); text-transform:uppercase; letter-spacing:.08em; display:block; }
 .p-art-name  { font-size:.88rem; font-weight:700; color:var(--text); font-family:var(--fH); }

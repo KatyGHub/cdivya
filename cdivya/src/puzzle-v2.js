@@ -287,6 +287,12 @@ function generateArtwork(index) {
   return cv;
 }
 
+function collapsePreview(el) {
+  el.classList.remove('pv-zoomed');
+  el.style.top = ''; el.style.left = '';
+  document.getElementById('pvBackdrop')?.remove();
+}
+
 function sliceTile(artCanvas, tileIndex) {
   const col = tileIndex % SIZE, row = Math.floor(tileIndex / SIZE);
   const sw = artCanvas.width / SIZE, sh = artCanvas.height / SIZE;
@@ -425,7 +431,33 @@ export function initPuzzle() {
   function buildSlices() {
     artCanvas = generateArtwork(artIndex);
     slices = Array.from({length:TOTAL},(_,i) => sliceTile(artCanvas, i));
-    if (previewEl) previewEl.style.backgroundImage = `url(${artCanvas.toDataURL()})`;
+    if (previewEl) {
+      previewEl.style.backgroundImage = `url(${artCanvas.toDataURL()})`;
+      // Click to zoom
+      previewEl.onclick = null;
+      previewEl.onclick = () => {
+        if (previewEl.classList.contains('pv-zoomed')) {
+          collapsePreview(previewEl); return;
+        }
+        // Anchor enlarged preview near the thumbnail
+        const rect = previewEl.getBoundingClientRect();
+        const size = Math.min(220, Math.min(window.innerWidth * 0.38, window.innerHeight * 0.38));
+        // Position: try to show below-right, but keep on screen
+        let top  = rect.bottom + 8;
+        let left = rect.left;
+        if (top + size > window.innerHeight - 12) top = rect.top - size - 8;
+        if (left + size > window.innerWidth  - 12) left = window.innerWidth - size - 12;
+        previewEl.style.top    = top  + 'px';
+        previewEl.style.left   = left + 'px';
+        previewEl.classList.add('pv-zoomed');
+        // Backdrop
+        const bd = document.createElement('div');
+        bd.className = 'pv-backdrop';
+        bd.id = 'pvBackdrop';
+        bd.onclick = () => collapsePreview(previewEl);
+        document.body.appendChild(bd);
+      };
+    }
     if (artNameEl) artNameEl.textContent = ARTWORKS[artIndex%ARTWORKS.length].name;
   }
 
