@@ -1,736 +1,648 @@
 /**
- * crossword.js — KNOW YOUR PEOPLE
- * 16 friends. Shuffled layout every game. Shuffled hints every game.
- * Lives · Timer · Streak multiplier · Hard mode
+ * crossword.js — KNOW YOUR PEOPLE v3
+ * Full names · 4 shuffled layouts · shuffled hints each game
+ * Lives · streak · timer · reveal animation · hard mode
  */
 
-// ─── People data ───────────────────────────────────────────────────────────────
+// ─── People ────────────────────────────────────────────────────────────────────
+// crossword key → { display name, emoji, hints[] }
 const PEOPLE = {
-  KAARTHIK:  ['TVK member', 'Known as EJ Keerthana', 'The fake Malayali of the group', 'Theevira Vijay Kanni'],
-  VARSHINII: ['SASTRA alumni', 'The unexpected one', 'Chintu', 'Has double I and still spells it wrong apparently'],
-  VACHU:     ['Unekenapa', 'From Atthipatti', 'Harish P\'s person', 'Stove off pannava', 'Jukebox regular'],
-  ARUN:      ['Basketball guy', 'Panamaram native', 'The quiet one until he isn\'t'],
-  NIVETHA:   ['V pose at every photo', 'The Rock energy', 'Batman fan', 'k-culture president', 'Harish P\'s person too'],
-  HARSHA:    ['Punctuality ku per ponava', 'Knows every Tamil movie/song', 'The one who always has something herbal'],
-  HARISH:    ['Farmer at heart', 'Never seen without a towel shirt', 'Ann', 'Jukebox collaborator'],
-  HARI:      ['Mother\'s blessed child', 'Murugan Idly guy', 'Believes in a wife who doesn\'t put makeup'],
-  MALAVIKAA: ['AA Battery — she has 2 A\'s', 'German resident according to Instagram', 'United by blood with someone here'],
-  YESHU:     ['Canada based', 'Unites north and south', 'The cd connection', 'Rishi\'s person', 'SHAHID SAFIULLA'],
-  NISHI:     ['Group oda mother', 'SHAHID SAFIULLA', 'Meesaiya Murukku', 'The one who keeps everyone together'],
-  JEFFREY:   ['Church guy', 'Kusu', 'Robo Shankar vibes', 'Muscat connection', 'The dialer'],
-  JASHWANTH: ['Future MLA', 'Future movie star', 'Future AP CM', 'Already acts like all three'],
-  ADITI:     ['Divs', 'Can we connect quickly on your leave?', 'Paithyakari', 'Always quick to check in'],
-  GOBI:      ['Spartan mindset', 'Tribal dance enthusiast', 'Pudhu maapillai in the making'],
-  DEEPTHI:   ['Ayyyyyyyyy', 'SHAHID SAFIULLA', 'Shrivanth', 'Vishnu', 'Gopi', 'The one with the loudest entrance'],
+  KAARTHIK:    { name:'Kaarthik',     emoji:'🧢', hints:['TVK member', 'Known as EJ Keerthana', 'The fake Malayali of the group', 'Theevira Vijay Kanni'] },
+  VARSHINII:   { name:'Varshinii',    emoji:'✨', hints:['SASTRA alumni', 'The unexpected one', 'Chintu', 'Has double I and still spells it right actually'] },
+  VACHU:       { name:'Vachu',        emoji:'🍳', hints:['Unekenapa', 'From Atthipatti', 'Jukebox regular', 'Stove off pannava'] },
+  ARUN:        { name:'Arun',         emoji:'🏀', hints:['Basketball guy', 'Panamaram native', 'The quiet one until he isn\'t'] },
+  NIVETHA:     { name:'Nivetha',      emoji:'🦸', hints:['The V pose at every photo', 'The Rock energy', 'Batman enthusiast', 'k-culture president'] },
+  HARSHA:      { name:'Harsha',       emoji:'🎬', hints:['Punctuality ku per ponava', 'Tamil movie/song knowledge on peak', 'Has something herbal for everything'] },
+  HARISH:      { name:'Harish',       emoji:'🌾', hints:['Farmer at heart', 'Never seen without a towel shirt', 'Ann', 'Jukebox collaborator'] },
+  HARIKRISHNA: { name:'Hari Krishna', emoji:'🙏', hints:['Mother\'s blessed child', 'Murugan Idly guy', 'Believes wife shouldn\'t wear makeup', 'Group oda gentle giant'] },
+  MALAVIKAA:   { name:'Malavikaa',    emoji:'🔋', hints:['AA Battery — she literally has 2 A\'s', 'German resident per Instagram', 'United by blood with someone here'] },
+  YESHU:       { name:'Yeshu',        emoji:'✈️', hints:['Canada-based', 'Bro who unites north and south', 'The cd connection', 'SHAHID SAFIULLA'] },
+  NISHI:       { name:'Nishi',        emoji:'👑', hints:['The group\'s mother', 'SHAHID SAFIULLA', 'Meesaiya Murukku', 'The one who keeps everyone together'] },
+  JEFFREY:     { name:'Jeffrey',      emoji:'⛪', hints:['Church guy', 'Kusu', 'Robo Shankar vibes', 'Muscat connection'] },
+  JASHWANTH:   { name:'Jashwanth',    emoji:'🎥', hints:['Future MLA', 'Future movie star', 'Future AP CM', 'Already acts like all three'] },
+  ADITINAG:    { name:'Aditi Nag',    emoji:'📞', hints:['Divs', 'Can we connect quickly on your leave?', 'Paithyakari', 'Always first to check in'] },
+  GOBI:        { name:'Gobi',         emoji:'🗿', hints:['Spartan mindset', 'Tribal dance enthusiast', 'Pudhu maapillai in the making'] },
+  DEEPTHI:     { name:'Deepthi',      emoji:'🎉', hints:['Ayyyyyyyyy', 'SHAHID SAFIULLA', 'Shrivanth', 'Vishnu', 'Gopi', 'The loudest entrance every time'] },
 };
 
-// ─── 4 pre-computed valid layouts (grid size 22×22) ───────────────────────────
+// ─── 4 pre-computed valid layouts (26×26 grid) ─────────────────────────────────
 const LAYOUTS = [
-  // Layout 0
   [
-    { word:'VARSHINII', row:11, col:6,  dir:'H' },
-    { word:'MALAVIKAA', row:4,  col:7,  dir:'V' },
-    { word:'JASHWANTH', row:8,  col:10, dir:'V' },
-    { word:'KAARTHIK',  row:7,  col:6,  dir:'H' },
-    { word:'NIVETHA',   row:13, col:4,  dir:'H' },
-    { word:'JEFFREY',   row:3,  col:9,  dir:'V' },
-    { word:'DEEPTHI',   row:16, col:5,  dir:'H' },
-    { word:'HARSHA',    row:2,  col:8,  dir:'V' },
-    { word:'HARISH',    row:2,  col:8,  dir:'H' },
-    { word:'VACHU',     row:4,  col:11, dir:'V' },
-    { word:'YESHU',     row:0,  col:12, dir:'V' },
-    { word:'NISHI',     row:15, col:11, dir:'V' },
-    { word:'ADITI',     row:5,  col:11, dir:'H' },
-    { word:'ARUN',      row:10, col:4,  dir:'V' },
-    { word:'HARI',      row:19, col:8,  dir:'H' },
-    { word:'GOBI',      row:9,  col:4,  dir:'H' },
+    {word:'HARIKRISHNA',row:13,col:7, dir:'H'},
+    {word:'VARSHINII',  row:6, col:13,dir:'V'},
+    {word:'MALAVIKAA',  row:12,col:17,dir:'V'},
+    {word:'JASHWANTH',  row:10,col:5, dir:'H'},
+    {word:'KAARTHIK',   row:7, col:11,dir:'H'},
+    {word:'ADITINAG',   row:17,col:13,dir:'H'},
+    {word:'NIVETHA',    row:15,col:11,dir:'H'},
+    {word:'JEFFREY',    row:8, col:9, dir:'H'},
+    {word:'DEEPTHI',    row:14,col:7, dir:'H'},
+    {word:'HARSHA',     row:9, col:6, dir:'V'},
+    {word:'HARISH',     row:4, col:17,dir:'V'},
+    {word:'VACHU',      row:16,col:17,dir:'H'},
+    {word:'YESHU',      row:12,col:21,dir:'V'},
+    {word:'NISHI',      row:4, col:14,dir:'H'},
+    {word:'ARUN',       row:19,col:17,dir:'H'},
+    {word:'GOBI',       row:1, col:18,dir:'V'},
   ],
-  // Layout 1
   [
-    { word:'VARSHINII', row:11, col:6,  dir:'H' },
-    { word:'MALAVIKAA', row:3,  col:7,  dir:'V' },
-    { word:'JASHWANTH', row:10, col:6,  dir:'H' },
-    { word:'KAARTHIK',  row:6,  col:6,  dir:'H' },
-    { word:'NIVETHA',   row:7,  col:5,  dir:'H' },
-    { word:'JEFFREY',   row:13, col:5,  dir:'V' },
-    { word:'DEEPTHI',   row:5,  col:14, dir:'V' },
-    { word:'HARSHA',    row:2,  col:11, dir:'V' },
-    { word:'HARISH',    row:3,  col:12, dir:'V' },
-    { word:'VACHU',     row:2,  col:8,  dir:'H' },
-    { word:'YESHU',     row:18, col:4,  dir:'H' },
-    { word:'NISHI',     row:8,  col:3,  dir:'H' },
-    { word:'ADITI',     row:4,  col:4,  dir:'V' },
-    { word:'ARUN',      row:17, col:4,  dir:'H' },
-    { word:'HARI',      row:1,  col:9,  dir:'V' },
-    { word:'GOBI',      row:6,  col:1,  dir:'H' },
+    {word:'HARIKRISHNA',row:13,col:7, dir:'H'},
+    {word:'VARSHINII',  row:10,col:14,dir:'V'},
+    {word:'MALAVIKAA',  row:11,col:13,dir:'H'},
+    {word:'JASHWANTH',  row:16,col:8, dir:'H'},
+    {word:'KAARTHIK',   row:18,col:8, dir:'H'},
+    {word:'ADITINAG',   row:11,col:21,dir:'V'},
+    {word:'NIVETHA',    row:8, col:7, dir:'V'},
+    {word:'JEFFREY',    row:11,col:2, dir:'H'},
+    {word:'DEEPTHI',    row:9, col:3, dir:'V'},
+    {word:'HARSHA',     row:16,col:11,dir:'V'},
+    {word:'HARISH',     row:15,col:0, dir:'H'},
+    {word:'VACHU',      row:10,col:20,dir:'V'},
+    {word:'YESHU',      row:14,col:11,dir:'H'},
+    {word:'NISHI',      row:13,col:16,dir:'V'},
+    {word:'ARUN',       row:18,col:10,dir:'V'},
+    {word:'GOBI',       row:15,col:11,dir:'H'},
   ],
-  // Layout 2
   [
-    { word:'VARSHINII', row:11, col:6,  dir:'H' },
-    { word:'MALAVIKAA', row:6,  col:13, dir:'V' },
-    { word:'JASHWANTH', row:9,  col:9,  dir:'V' },
-    { word:'KAARTHIK',  row:5,  col:11, dir:'V' },
-    { word:'NIVETHA',   row:15, col:9,  dir:'H' },
-    { word:'JEFFREY',   row:14, col:12, dir:'V' },
-    { word:'DEEPTHI',   row:17, col:4,  dir:'H' },
-    { word:'HARSHA',    row:10, col:15, dir:'V' },
-    { word:'HARISH',    row:9,  col:8,  dir:'V' },
-    { word:'VACHU',     row:10, col:7,  dir:'V' },
-    { word:'YESHU',     row:16, col:5,  dir:'V' },
-    { word:'NISHI',     row:19, col:2,  dir:'H' },
-    { word:'ADITI',     row:15, col:3,  dir:'V' },
-    { word:'ARUN',      row:8,  col:12, dir:'V' },
-    { word:'HARI',      row:15, col:2,  dir:'H' },
-    { word:'GOBI',      row:8,  col:14, dir:'V' },
+    {word:'HARIKRISHNA',row:13,col:7, dir:'H'},
+    {word:'VARSHINII',  row:11,col:12,dir:'V'},
+    {word:'MALAVIKAA',  row:8, col:10,dir:'V'},
+    {word:'JASHWANTH',  row:7, col:16,dir:'V'},
+    {word:'KAARTHIK',   row:8, col:15,dir:'H'},
+    {word:'ADITINAG',   row:9, col:13,dir:'V'},
+    {word:'NIVETHA',    row:15,col:4, dir:'H'},
+    {word:'JEFFREY',    row:7, col:16,dir:'H'},
+    {word:'DEEPTHI',    row:18,col:6, dir:'H'},
+    {word:'HARSHA',     row:13,col:15,dir:'V'},
+    {word:'HARISH',     row:12,col:15,dir:'H'},
+    {word:'VACHU',      row:15,col:11,dir:'V'},
+    {word:'YESHU',      row:17,col:7, dir:'V'},
+    {word:'NISHI',      row:10,col:19,dir:'V'},
+    {word:'ARUN',       row:12,col:4, dir:'V'},
+    {word:'GOBI',       row:12,col:5, dir:'V'},
   ],
-  // Layout 3
   [
-    { word:'VARSHINII', row:11, col:6,  dir:'H' },
-    { word:'MALAVIKAA', row:8,  col:7,  dir:'V' },
-    { word:'JASHWANTH', row:15, col:2,  dir:'H' },
-    { word:'KAARTHIK',  row:16, col:5,  dir:'H' },
-    { word:'NIVETHA',   row:10, col:14, dir:'V' },
-    { word:'JEFFREY',   row:13, col:9,  dir:'H' },
-    { word:'DEEPTHI',   row:14, col:10, dir:'H' },
-    { word:'HARSHA',    row:9,  col:2,  dir:'H' },
-    { word:'HARISH',    row:4,  col:6,  dir:'V' },
-    { word:'VACHU',     row:12, col:14, dir:'H' },
-    { word:'YESHU',     row:13, col:4,  dir:'V' },
-    { word:'NISHI',     row:7,  col:2,  dir:'H' },
-    { word:'ADITI',     row:16, col:14, dir:'H' },
-    { word:'ARUN',      row:8,  col:12, dir:'V' },
-    { word:'HARI',      row:9,  col:10, dir:'H' },
-    { word:'GOBI',      row:6,  col:13, dir:'V' },
+    {word:'HARIKRISHNA',row:13,col:7, dir:'H'},
+    {word:'VARSHINII',  row:5, col:10,dir:'V'},
+    {word:'MALAVIKAA',  row:6, col:8, dir:'V'},
+    {word:'JASHWANTH',  row:14,col:3, dir:'H'},
+    {word:'KAARTHIK',   row:7, col:7, dir:'H'},
+    {word:'ADITINAG',   row:4, col:11,dir:'V'},
+    {word:'NIVETHA',    row:9, col:6, dir:'V'},
+    {word:'JEFFREY',    row:9, col:12,dir:'V'},
+    {word:'DEEPTHI',    row:1, col:13,dir:'V'},
+    {word:'HARSHA',     row:4, col:6, dir:'H'},
+    {word:'HARISH',     row:13,col:4, dir:'V'},
+    {word:'VACHU',      row:6, col:9, dir:'V'},
+    {word:'YESHU',      row:10,col:15,dir:'V'},
+    {word:'NISHI',      row:13,col:16,dir:'V'},
+    {word:'ARUN',       row:15,col:6, dir:'H'},
+    {word:'GOBI',       row:17,col:13,dir:'H'},
   ],
 ];
 
-// ─── Game state ────────────────────────────────────────────────────────────────
-const GRID_SIZE = 22;
+// ─── Constants ─────────────────────────────────────────────────────────────────
+const GRID_SIZE   = 26;
+const TIME_NORMAL = 30;
+const TIME_HARD   = 18;
+
+// ─── State ─────────────────────────────────────────────────────────────────────
 let gameLayout   = [];
 let answerGrid   = [];
 let playerGrid   = [];
-let wordHints    = {};    // word → current hint string
-let wordStatus   = {};    // word → 'unsolved' | 'correct' | 'failed'
+let wordHints    = {};
+let wordStatus   = {};   // 'unsolved' | 'correct' | 'failed'
 let activeWord   = null;
 let activeInput  = '';
 let lives        = 5;
 let score        = 0;
 let streak       = 0;
-let timerID      = null;
 let timeLeft     = 0;
+let timerID      = null;
 let hardMode     = false;
 let rootEl       = null;
 let modalOpen    = false;
+let solvedOrder  = [];   // track order of solves for reveal card
 
-const TIME_PER_WORD = 25; // seconds per word (hard: 15)
-
-// ─── Shuffle ──────────────────────────────────────────────────────────────────
+// ─── Helpers ───────────────────────────────────────────────────────────────────
 function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1)); [a[i],a[j]] = [a[j],a[i]];
+  const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;
+}
+function getMultiplier() {
+  return streak>=8?4:streak>=5?3:streak>=3?2:1;
+}
+function getBounds(layout) {
+  let minR=GRID_SIZE,maxR=0,minC=GRID_SIZE,maxC=0;
+  for(const {word,row,col,dir} of layout){
+    const er=dir==='V'?row+word.length-1:row, ec=dir==='H'?col+word.length-1:col;
+    minR=Math.min(minR,row);maxR=Math.max(maxR,er);minC=Math.min(minC,col);maxC=Math.max(maxC,ec);
   }
-  return a;
+  return {minR:Math.max(0,minR-1),maxR:Math.min(GRID_SIZE-1,maxR+1),minC:Math.max(0,minC-1),maxC:Math.min(GRID_SIZE-1,maxC+1)};
 }
 
-// ─── Build grids ─────────────────────────────────────────────────────────────
+// ─── Grid logic ─────────────────────────────────────────────────────────────────
 function buildAnswerGrid(layout) {
-  const g = Array.from({length:GRID_SIZE}, () => Array(GRID_SIZE).fill(null));
-  for (const {word, row, col, dir} of layout) {
-    for (let i = 0; i < word.length; i++) {
-      const r = dir==='V' ? row+i : row;
-      const c = dir==='H' ? col+i : col;
-      if (r < GRID_SIZE && c < GRID_SIZE) g[r][c] = word[i];
+  const g=Array.from({length:GRID_SIZE},()=>Array(GRID_SIZE).fill(null));
+  for(const {word,row,col,dir} of layout)
+    for(let i=0;i<word.length;i++) {
+      const r=dir==='V'?row+i:row, c=dir==='H'?col+i:col;
+      if(r<GRID_SIZE&&c<GRID_SIZE) g[r][c]=word[i];
     }
-  }
   return g;
 }
 
-function buildPlayerGrid(size) {
-  return Array.from({length:size}, () => Array(size).fill(null));
-}
-
-// Crop to bounding box + padding
-function getBounds(layout) {
-  let minR=GRID_SIZE, maxR=0, minC=GRID_SIZE, maxC=0;
-  for (const {word, row, col, dir} of layout) {
-    const endR = dir==='V' ? row+word.length-1 : row;
-    const endC = dir==='H' ? col+word.length-1 : col;
-    minR = Math.min(minR, row); maxR = Math.max(maxR, endR);
-    minC = Math.min(minC, col); maxC = Math.max(maxC, endC);
-  }
-  const pad = 1;
-  return { minR: Math.max(0, minR-pad), maxR: Math.min(GRID_SIZE-1, maxR+pad),
-           minC: Math.max(0, minC-pad), maxC: Math.min(GRID_SIZE-1, maxC+pad) };
-}
-
-// ─── Word numbering ───────────────────────────────────────────────────────────
 function numberWords(layout) {
-  // Assign numbers top-left to bottom-right (by row then col)
-  const sorted = [...layout].sort((a,b) => a.row!==b.row ? a.row-b.row : a.col-b.col);
-  const numbered = [];
-  const usedCells = new Map();
-  let n = 1;
-  for (const entry of sorted) {
-    const key = `${entry.row},${entry.col}`;
-    if (!usedCells.has(key)) { usedCells.set(key, n++); }
-    numbered.push({ ...entry, num: usedCells.get(key) });
+  const sorted=[...layout].sort((a,b)=>a.row!==b.row?a.row-b.row:a.col-b.col);
+  const map=new Map(); let n=1;
+  const out=[];
+  for(const e of sorted){
+    const k=`${e.row},${e.col}`;
+    if(!map.has(k)) map.set(k,n++);
+    out.push({...e,num:map.get(k)});
   }
-  return numbered;
+  return out;
 }
 
-// ─── DOM rendering ────────────────────────────────────────────────────────────
-function renderGrid(layout, bounds) {
-  const { minR, maxR, minC, maxC } = bounds;
-  const rows = maxR - minR + 1;
-  const cols = maxC - minC + 1;
+// ─── Build UI ──────────────────────────────────────────────────────────────────
+function buildUI(bounds) {
+  const {minR,maxR,minC,maxC}=bounds;
+  const rows=maxR-minR+1, cols=maxC-minC+1;
+  const numbered=numberWords(gameLayout);
+  const numMap={};
+  for(const {row,col,num} of numbered) numMap[`${row},${col}`]=num;
 
-  const numbered = numberWords(layout);
-  const numMap   = {};
-  for (const {row, col, num} of numbered) numMap[`${row},${col}`] = num;
-
-  const table = document.createElement('div');
-  table.className = 'cw2-grid';
-  table.style.setProperty('--cw-cols', cols);
-  table.style.setProperty('--cw-rows', rows);
-
-  for (let r = minR; r <= maxR; r++) {
-    for (let c = minC; c <= maxC; c++) {
-      const cell = document.createElement('div');
-      cell.dataset.r = r; cell.dataset.c = c;
-      const letter = answerGrid[r]?.[c];
-      if (!letter) {
-        cell.className = 'cw2-cell cw2-cell--blank';
+  // Grid HTML
+  let gridHTML='';
+  for(let r=minR;r<=maxR;r++){
+    for(let c=minC;c<=maxC;c++){
+      const letter=answerGrid[r]?.[c];
+      if(!letter){
+        gridHTML+=`<div class="cw3-cell cw3-void"></div>`;
       } else {
-        cell.className = 'cw2-cell cw2-cell--letter';
-        const num = numMap[`${r},${c}`];
-        if (num) {
-          const badge = document.createElement('span');
-          badge.className = 'cw2-num';
-          badge.textContent = num;
-          cell.appendChild(badge);
-        }
-        const letterEl = document.createElement('span');
-        letterEl.className = 'cw2-letter';
-        letterEl.dataset.r = r; letterEl.dataset.c = c;
-        cell.appendChild(letterEl);
-        cell.addEventListener('click', () => onCellClick(r, c, layout));
-      }
-      table.appendChild(cell);
-    }
-  }
-  return table;
-}
-
-function onCellClick(r, c, layout) {
-  // Find which word(s) this cell belongs to
-  const words = layout.filter(({word, row, col, dir}) => {
-    if (dir==='H') return r===row && c>=col && c<col+word.length;
-    else           return c===col && r>=row && r<row+word.length;
-  });
-  if (!words.length) return;
-  // Toggle between words if cell has two
-  if (words.length === 2 && activeWord === words[0].word) {
-    startWord(words[1]);
-  } else {
-    startWord(words[0]);
-  }
-}
-
-// ─── Clue panel ───────────────────────────────────────────────────────────────
-function renderClues(numbered) {
-  const across = numbered.filter(e => e.dir==='H').sort((a,b) => a.num-b.num);
-  const down   = numbered.filter(e => e.dir==='V').sort((a,b) => a.num-b.num);
-
-  const el = rootEl.querySelector('.cw2-clues');
-  if (!el) return;
-
-  function section(title, list) {
-    const div = document.createElement('div');
-    div.className = 'cw2-clue-section';
-    div.innerHTML = `<h3 class="cw2-clue-heading">${title}</h3>`;
-    for (const entry of list) {
-      const item = document.createElement('div');
-      item.className = `cw2-clue-item ${wordStatus[entry.word]==='correct'?'cw2-clue--done':''}`;
-      item.dataset.word = entry.word;
-      item.innerHTML = `
-        <span class="cw2-clue-num">${entry.num}</span>
-        <span class="cw2-clue-text">${wordHints[entry.word] || '—'}</span>
-        <span class="cw2-clue-len">(${entry.word.length})</span>
-      `;
-      item.addEventListener('click', () => startWord(entry));
-      div.appendChild(item);
-    }
-    return div;
-  }
-
-  el.innerHTML = '';
-  el.appendChild(section('ACROSS →', across));
-  el.appendChild(section('DOWN ↓', down));
-}
-
-// ─── Highlight ────────────────────────────────────────────────────────────────
-function highlightWord(wordEntry) {
-  rootEl.querySelectorAll('.cw2-cell--letter').forEach(c => {
-    c.classList.remove('cw2-highlight', 'cw2-highlight-cursor');
-  });
-  rootEl.querySelectorAll('.cw2-clue-item').forEach(c => {
-    c.classList.remove('cw2-clue-active');
-  });
-
-  if (!wordEntry) return;
-
-  const { word, row, col, dir } = wordEntry;
-  for (let i = 0; i < word.length; i++) {
-    const r = dir==='V' ? row+i : row;
-    const c2 = dir==='H' ? col+i : col;
-    const cell = rootEl.querySelector(`.cw2-cell[data-r="${r}"][data-c="${c2}"]`);
-    if (cell) {
-      cell.classList.add('cw2-highlight');
-      if (i === activeInput.length) cell.classList.add('cw2-highlight-cursor');
-    }
-  }
-
-  const clueItem = rootEl.querySelector(`.cw2-clue-item[data-word="${word}"]`);
-  clueItem?.classList.add('cw2-clue-active');
-  clueItem?.scrollIntoView({ block:'nearest', behavior:'smooth' });
-}
-
-// ─── Active word input ────────────────────────────────────────────────────────
-function startWord(entry) {
-  if (!entry || wordStatus[entry.word] === 'correct') return;
-  if (activeWord === entry.word) return;
-  activeWord  = entry.word;
-  activeInput = '';
-  stopWordTimer();
-  startWordTimer(entry);
-  highlightWord(entry);
-  updateInputDisplay(entry);
-  updateActiveMeta(entry);
-}
-
-function updateActiveMeta(entry) {
-  const metaEl = rootEl.querySelector('.cw2-active-meta');
-  if (!metaEl || !entry) return;
-  const numbered = numberWords(gameLayout);
-  const num = numbered.find(e => e.word === entry.word)?.num;
-  metaEl.innerHTML = `
-    <span class="cw2-active-num">${num || '?'}${entry.dir==='H'?' →':' ↓'}</span>
-    <span class="cw2-active-hint">${wordHints[entry.word]}</span>
-    <span class="cw2-active-len">${entry.word.length} letters</span>
-  `;
-}
-
-function updateInputDisplay(entry) {
-  if (!entry) return;
-  const { word, row, col, dir } = entry;
-  for (let i = 0; i < word.length; i++) {
-    const r = dir==='V' ? row+i : row;
-    const c = dir==='H' ? col+i : col;
-    const letterEl = rootEl.querySelector(`.cw2-letter[data-r="${r}"][data-c="${c}"]`);
-    if (!letterEl) continue;
-    if (playerGrid[r]?.[c]) {
-      letterEl.textContent = playerGrid[r][c];
-      letterEl.dataset.state = 'correct';
-    } else if (i < activeInput.length) {
-      letterEl.textContent = activeInput[i];
-      letterEl.dataset.state = 'typing';
-    } else {
-      letterEl.textContent = '';
-      letterEl.dataset.state = '';
-    }
-  }
-  highlightWord(entry);
-}
-
-// ─── Word timer ───────────────────────────────────────────────────────────────
-function startWordTimer(entry) {
-  timeLeft = hardMode ? 15 : TIME_PER_WORD;
-  renderTimer();
-  timerID = setInterval(() => {
-    timeLeft--;
-    renderTimer();
-    if (timeLeft <= 0) {
-      stopWordTimer();
-      onWordFail(entry, 'time');
-    }
-  }, 1000);
-}
-
-function stopWordTimer() { clearInterval(timerID); timerID = null; }
-
-function renderTimer() {
-  const el = rootEl?.querySelector('.cw2-timer-fill');
-  const vl = rootEl?.querySelector('.cw2-timer-val');
-  const max = hardMode ? 15 : TIME_PER_WORD;
-  if (el) {
-    el.style.width = `${Math.max(0, (timeLeft/max)*100)}%`;
-    el.dataset.urgency = timeLeft <= 5 ? 'critical' : timeLeft <= 10 ? 'warn' : 'ok';
-  }
-  if (vl) {
-    vl.textContent = timeLeft;
-    vl.dataset.urgency = timeLeft <= 5 ? 'critical' : 'ok';
-  }
-}
-
-// ─── Key input ────────────────────────────────────────────────────────────────
-function handleCrosswordKey(e) {
-  if (!modalOpen || !activeWord) return;
-  if (e.ctrlKey || e.metaKey || e.altKey) return;
-  const entry = gameLayout.find(w => w.word === activeWord);
-  if (!entry) return;
-
-  if (e.key === 'Escape') { activeWord = null; highlightWord(null); stopWordTimer(); return; }
-  if (e.key === 'Backspace') {
-    activeInput = activeInput.slice(0, -1);
-    updateInputDisplay(entry);
-    e.preventDefault(); return;
-  }
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    advanceWord(entry);
-    return;
-  }
-  if (/^[a-zA-Z]$/.test(e.key)) {
-    const ch = e.key.toUpperCase();
-    if (activeInput.length < entry.word.length) {
-      activeInput += ch;
-      updateInputDisplay(entry);
-      // Flash correct/wrong per letter
-      const idx = activeInput.length - 1;
-      const correct = entry.word[idx];
-      if (ch === correct) {
-        flashLetter(entry, idx, 'hit');
-      } else {
-        flashLetter(entry, idx, 'miss');
-        loseLife(entry);
-      }
-      if (activeInput.length === entry.word.length) {
-        setTimeout(() => checkWord(entry), 200);
+        const num=numMap[`${r},${c}`];
+        gridHTML+=`
+          <div class="cw3-cell cw3-tile" data-r="${r}" data-c="${c}" tabindex="0">
+            ${num?`<span class="cw3-num">${num}</span>`:''}
+            <span class="cw3-glyph" data-r="${r}" data-c="${c}"></span>
+          </div>`;
       }
     }
-    e.preventDefault();
   }
-}
 
-function flashLetter(entry, idx, type) {
-  const { row, col, dir } = entry;
-  const r = dir==='V' ? row+idx : row;
-  const c = dir==='H' ? col+idx : col;
-  const cell = rootEl.querySelector(`.cw2-cell[data-r="${r}"][data-c="${c}"]`);
-  cell?.classList.add(`cw2-flash-${type}`);
-  setTimeout(() => cell?.classList.remove(`cw2-flash-${type}`), 350);
-}
+  // Clue lists
+  const across=numbered.filter(e=>e.dir==='H').sort((a,b)=>a.num-b.num);
+  const down  =numbered.filter(e=>e.dir==='V').sort((a,b)=>a.num-b.num);
 
-function advanceWord(current) {
-  const numbered = numberWords(gameLayout);
-  const unsolved = numbered.filter(e => wordStatus[e.word] !== 'correct');
-  if (!unsolved.length) return;
-  const ci = unsolved.findIndex(e => e.word === current?.word);
-  const next = unsolved[(ci + 1) % unsolved.length];
-  startWord(next);
-}
-
-// ─── Check word ───────────────────────────────────────────────────────────────
-function checkWord(entry) {
-  const { word, row, col, dir } = entry;
-  if (activeInput === word) {
-    // Correct!
-    stopWordTimer();
-    wordStatus[word] = 'correct';
-    streak++;
-    const bonus  = Math.max(1, timeLeft) * 5 * getMultiplier();
-    score       += 100 + bonus;
-    // Write to playerGrid
-    for (let i = 0; i < word.length; i++) {
-      const r = dir==='V' ? row+i : row;
-      const c = dir==='H' ? col+i : col;
-      if (playerGrid[r]) playerGrid[r][c] = word[i];
-    }
-    // Reveal in grid
-    updateInputDisplay(entry);
-    triggerWordWin(entry, bonus);
-    updateHUD();
-    renderClues(numberWords(gameLayout));
-    // Auto-advance to next unsolved
-    setTimeout(() => {
-      const unsolved = gameLayout.filter(e => wordStatus[e.word] !== 'correct');
-      if (!unsolved.length) {
-        onAllSolved();
-      } else {
-        advanceWord(entry);
-      }
-    }, 700);
-  } else {
-    // Wrong full word
-    streak = 0;
-    loseLife(entry);
-    activeInput = '';
-    updateInputDisplay(entry);
-    updateHUD();
+  function clueItem(e) {
+    const p=PEOPLE[e.word];
+    return `<button class="cw3-clue" data-word="${e.word}" data-num="${e.num}" data-dir="${e.dir}">
+      <span class="cw3-cn">${e.num}</span>
+      <span class="cw3-ct">${wordHints[e.word]}</span>
+      <span class="cw3-cl">${e.word.length}</span>
+    </button>`;
   }
-}
 
-function triggerWordWin(entry, bonus) {
-  const { row, col, dir, word } = entry;
-  // Flash all cells green
-  for (let i = 0; i < word.length; i++) {
-    const r = dir==='V' ? row+i : row;
-    const c = dir==='H' ? col+i : col;
-    const cell = rootEl.querySelector(`.cw2-cell[data-r="${r}"][data-c="${c}"]`);
-    if (cell) {
-      setTimeout(() => {
-        cell.classList.add('cw2-cell--solved');
-      }, i * 60);
-    }
-  }
-  const multEl = rootEl.querySelector('.cw2-combo');
-  if (multEl && getMultiplier() > 1) {
-    multEl.textContent = `×${getMultiplier()} COMBO`;
-    multEl.classList.add('show');
-    setTimeout(() => multEl.classList.remove('show'), 1800);
-  }
-}
+  rootEl.innerHTML=`
+  <div class="cw3-shell">
 
-function loseLife(entry) {
-  if (lives <= 0) return;
-  lives--;
-  updateHUD();
-  if (lives === 0) {
-    setTimeout(() => onGameOver(), 400);
-    return;
-  }
-  // Shake the active word cells
-  const { word, row, col, dir } = entry;
-  for (let i = 0; i < word.length; i++) {
-    const r = dir==='V' ? row+i : row;
-    const c = dir==='H' ? col+i : col;
-    const cell = rootEl.querySelector(`.cw2-cell[data-r="${r}"][data-c="${c}"]`);
-    cell?.classList.add('cw2-shake');
-    setTimeout(() => cell?.classList.remove('cw2-shake'), 600);
-  }
-}
-
-function onWordFail(entry, reason) {
-  streak = 0;
-  loseLife(entry);
-  activeInput = '';
-  updateInputDisplay(entry);
-  if (lives > 0) {
-    const msg = reason === 'time' ? '⏱ Time\'s up!' : '✗ Wrong!';
-    showFlash(msg);
-    advanceWord(entry);
-  }
-}
-
-// ─── HUD ──────────────────────────────────────────────────────────────────────
-function getMultiplier() {
-  if (streak >= 8) return 4;
-  if (streak >= 5) return 3;
-  if (streak >= 3) return 2;
-  return 1;
-}
-
-function updateHUD() {
-  const livesEl = rootEl?.querySelector('.cw2-lives');
-  const scoreEl = rootEl?.querySelector('.cw2-score-val');
-  const streakEl = rootEl?.querySelector('.cw2-streak-val');
-  if (livesEl) livesEl.innerHTML = Array.from({length:5},(_,i) => `<span class="cw2-heart${i<lives?'':' lost'}">❤</span>`).join('');
-  if (scoreEl) scoreEl.textContent = score;
-  if (streakEl) streakEl.textContent = streak;
-
-  const leftEl = rootEl?.querySelector('.cw2-words-left');
-  if (leftEl) {
-    const done = Object.values(wordStatus).filter(s=>s==='correct').length;
-    leftEl.textContent = `${done} / ${gameLayout.length}`;
-  }
-}
-
-function showFlash(msg) {
-  const el = rootEl?.querySelector('.cw2-flash-msg');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 1600);
-}
-
-// ─── End states ──────────────────────────────────────────────────────────────
-function onAllSolved() {
-  stopWordTimer();
-  activeWord = null;
-  highlightWord(null);
-  fireConfetti();
-  showEndPanel(true);
-}
-
-function onGameOver() {
-  stopWordTimer();
-  activeWord = null;
-  highlightWord(null);
-  // Reveal all unsolved words
-  for (const entry of gameLayout) {
-    if (wordStatus[entry.word] !== 'correct') {
-      revealEntry(entry);
-    }
-  }
-  showEndPanel(false);
-}
-
-function revealEntry(entry) {
-  const { word, row, col, dir } = entry;
-  for (let i = 0; i < word.length; i++) {
-    const r = dir==='V' ? row+i : row;
-    const c = dir==='H' ? col+i : col;
-    const letterEl = rootEl.querySelector(`.cw2-letter[data-r="${r}"][data-c="${c}"]`);
-    if (letterEl) { letterEl.textContent = word[i]; letterEl.dataset.state = 'revealed'; }
-  }
-}
-
-function showEndPanel(won) {
-  const el = rootEl?.querySelector('.cw2-endpanel');
-  if (!el) return;
-  const solved = Object.values(wordStatus).filter(s=>s==='correct').length;
-  el.innerHTML = `
-    <div class="cw2-ep-inner">
-      <div class="cw2-ep-icon">${won ? '🎉' : '💀'}</div>
-      <div class="cw2-ep-title">${won ? 'YOU KNOW YOUR PEOPLE' : 'GAME OVER'}</div>
-      <div class="cw2-ep-score">Score: <strong>${score}</strong></div>
-      <div class="cw2-ep-detail">${solved} / ${gameLayout.length} words · Best streak: ${streak}</div>
-      <div class="cw2-ep-actions">
-        <button class="btn btn-primary cw2-ep-btn" id="cw2PlayAgain">Play Again</button>
-        <button class="btn btn-ghost cw2-ep-btn" id="cw2HardToggle">${hardMode?'Normal Mode':'Hard Mode 🔥'}</button>
+    <!-- Header -->
+    <div class="cw3-header">
+      <div class="cw3-brand">
+        <span class="cw3-brand-text">KNOW YOUR PEOPLE</span>
+        ${hardMode?'<span class="cw3-hard">HARD 🔥</span>':''}
       </div>
-    </div>
-  `;
-  el.classList.add('visible');
-  el.querySelector('#cw2PlayAgain')?.addEventListener('click', () => {
-    el.classList.remove('visible');
-    initGame();
-  });
-  el.querySelector('#cw2HardToggle')?.addEventListener('click', () => {
-    hardMode = !hardMode;
-    el.classList.remove('visible');
-    initGame();
-  });
-}
-
-// ─── Confetti ─────────────────────────────────────────────────────────────────
-function fireConfetti() {
-  const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999';
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  canvas.width = innerWidth; canvas.height = innerHeight;
-  const C=['#00FFBD','#FF2D55','#BF5FFF','#FFB800','#FF8C42','#fff'];
-  const pts=Array.from({length:120},()=>({x:Math.random()*canvas.width,y:-30-Math.random()*100,vx:(Math.random()-.5)*8,vy:Math.random()*3+2,rot:Math.random()*360,spin:(Math.random()-.5)*12,w:Math.random()*12+5,h:Math.random()*6+3,color:C[~~(Math.random()*C.length)]}));
-  let alive=true;
-  setTimeout(()=>{alive=false;setTimeout(()=>canvas.remove(),500);},3200);
-  (function frame(){if(!alive)return;ctx.clearRect(0,0,canvas.width,canvas.height);for(const p of pts){p.x+=p.vx;p.y+=p.vy;p.vy+=0.07;p.rot+=p.spin;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-p.y/canvas.height*1.3);ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();}requestAnimationFrame(frame);})();
-}
-
-// ─── Game init ─────────────────────────────────────────────────────────────────
-function initGame() {
-  // Pick random layout
-  gameLayout = LAYOUTS[Math.floor(Math.random() * LAYOUTS.length)];
-
-  // Shuffle hints per word
-  wordHints  = {};
-  wordStatus = {};
-  for (const { word } of gameLayout) {
-    const hints = PEOPLE[word] || ['Who are they?'];
-    wordHints[word]  = shuffle(hints)[0]; // pick one random hint
-    wordStatus[word] = 'unsolved';
-  }
-
-  // Build grids
-  answerGrid = buildAnswerGrid(gameLayout);
-  playerGrid = buildPlayerGrid(GRID_SIZE);
-  activeWord = null;
-  activeInput = '';
-  lives  = hardMode ? 3 : 5;
-  score  = 0;
-  streak = 0;
-
-  const bounds   = getBounds(gameLayout);
-  const numbered = numberWords(gameLayout);
-
-  rootEl.innerHTML = `
-    <div class="cw2-wrapper">
-      <div class="cw2-header">
-        <div class="cw2-title-row">
-          <h2 class="cw2-title">KNOW YOUR PEOPLE</h2>
-          ${hardMode ? '<span class="cw2-hard-badge">HARD 🔥</span>' : ''}
+      <div class="cw3-hud">
+        <div class="cw3-lives" id="cw3Lives"></div>
+        <div class="cw3-stats">
+          <div class="cw3-stat"><span id="cw3Score">0</span><small>pts</small></div>
+          <div class="cw3-stat"><span id="cw3Streak">0</span><small>🔥</small></div>
+          <div class="cw3-stat"><span id="cw3Left">0/${gameLayout.length}</span><small>done</small></div>
         </div>
-        <div class="cw2-hud">
-          <div class="cw2-lives"></div>
-          <div class="cw2-hud-right">
-            <div class="cw2-hud-item"><span class="cw2-score-val">0</span><small>score</small></div>
-            <div class="cw2-hud-item"><span class="cw2-streak-val">0</span><small>streak 🔥</small></div>
-            <div class="cw2-hud-item"><span class="cw2-words-left">0/${gameLayout.length}</span><small>solved</small></div>
+      </div>
+
+      <!-- Active word bar -->
+      <div class="cw3-active-bar" id="cw3ActiveBar">
+        <div class="cw3-ab-left">
+          <span class="cw3-ab-badge" id="cw3AbBadge"></span>
+          <span class="cw3-ab-hint" id="cw3AbHint">← Select a clue or cell to begin</span>
+        </div>
+        <div class="cw3-ab-right">
+          <span class="cw3-ab-timer" id="cw3AbTimer"></span>
+          <div class="cw3-timer-ring" id="cw3TimerRing">
+            <svg viewBox="0 0 36 36"><circle class="cw3-ring-bg" cx="18" cy="18" r="15.9"/><circle class="cw3-ring-fill" id="cw3RingFill" cx="18" cy="18" r="15.9"/></svg>
           </div>
         </div>
-        <div class="cw2-active-meta-bar">
-          <div class="cw2-timer-bar"><div class="cw2-timer-fill" data-urgency="ok"></div></div>
-          <div class="cw2-active-meta"><span class="cw2-meta-placeholder">← Click a clue or grid cell</span></div>
-          <span class="cw2-timer-val">—</span>
+      </div>
+    </div>
+
+    <!-- Body: grid + clues -->
+    <div class="cw3-body">
+      <div class="cw3-grid-scroll">
+        <div class="cw3-grid" id="cw3Grid"
+          style="--cw-cols:${cols};--cw-rows:${rows}">
+          ${gridHTML}
         </div>
       </div>
 
-      <div class="cw2-body">
-        <div class="cw2-grid-wrap" id="cw2GridWrap"></div>
-        <div class="cw2-clues"></div>
+      <div class="cw3-sidebar">
+        <div class="cw3-clue-group">
+          <div class="cw3-cg-head">ACROSS →</div>
+          <div class="cw3-cg-list" id="cw3Across">${across.map(clueItem).join('')}</div>
+        </div>
+        <div class="cw3-clue-group">
+          <div class="cw3-cg-head">DOWN ↓</div>
+          <div class="cw3-cg-list" id="cw3Down">${down.map(clueItem).join('')}</div>
+        </div>
       </div>
-
-      <div class="cw2-flash-msg" aria-live="assertive"></div>
-      <div class="cw2-combo" aria-live="polite"></div>
-      <div class="cw2-endpanel" aria-live="polite"></div>
     </div>
-  `;
 
-  const gridWrap = rootEl.querySelector('#cw2GridWrap');
-  gridWrap.appendChild(renderGrid(gameLayout, bounds));
-  renderClues(numbered);
+    <!-- Overlays -->
+    <div class="cw3-flash" id="cw3Flash" aria-live="assertive"></div>
+    <div class="cw3-combo" id="cw3Combo"></div>
+    <div class="cw3-reveal-card" id="cw3RevealCard"></div>
+    <div class="cw3-endpanel" id="cw3End"></div>
+  </div>`;
+
+  // Wire grid cell clicks
+  rootEl.querySelectorAll('.cw3-tile').forEach(cell=>{
+    cell.addEventListener('click',()=>{
+      const r=+cell.dataset.r, c=+cell.dataset.c;
+      onCellClick(r,c);
+    });
+  });
+  // Wire clue clicks
+  rootEl.querySelectorAll('.cw3-clue').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const entry=gameLayout.find(e=>e.word===btn.dataset.word);
+      if(entry) startWord(entry);
+    });
+  });
+
   updateHUD();
-
-  // Auto-start first unsolved word
-  setTimeout(() => {
-    const first = numbered.sort((a,b)=>a.num-b.num).find(e=>wordStatus[e.word]!=='correct');
-    if (first) startWord(first);
-  }, 300);
 }
 
-// ─── Public init ─────────────────────────────────────────────────────────────
-export function initCrossword() {
-  const card     = document.getElementById('openCrosswordCard');
-  const modal    = document.getElementById('crosswordModal');
-  const closeBtn = document.getElementById('crosswordClose');
-  const overlay  = modal?.querySelector('.modal-overlay');
-  const content  = document.getElementById('crosswordContent');
-  if (!card || !modal || !content) return;
+// ─── Cell click ────────────────────────────────────────────────────────────────
+function onCellClick(r,c) {
+  const hits=gameLayout.filter(({word,row,col,dir})=>
+    dir==='H'?r===row&&c>=col&&c<col+word.length:c===col&&r>=row&&r<row+word.length
+  ).filter(e=>wordStatus[e.word]!=='correct');
+  if(!hits.length) return;
+  // Toggle between H and V if two words share this cell
+  if(hits.length===2&&activeWord===hits[0].word) startWord(hits[1]);
+  else startWord(hits[0]);
+}
 
-  function openModal() {
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    modalOpen = true;
-    rootEl = content;
-    initGame();
-    document.addEventListener('keydown', handleCrosswordKey);
-  }
-  function closeModal() {
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    modalOpen = false;
-    stopWordTimer();
-    document.removeEventListener('keydown', handleCrosswordKey);
-  }
+// ─── Start word ────────────────────────────────────────────────────────────────
+function startWord(entry) {
+  if(wordStatus[entry.word]==='correct') return;
+  activeWord=entry.word; activeInput='';
+  stopTimer();
+  startTimer(entry);
+  highlightWord(entry);
+  updateActiveBar(entry);
+  renderWordInput(entry);
+}
 
-  card.addEventListener('click', openModal);
-  card.querySelector('.gc-btn')?.addEventListener('click', e => { e.stopPropagation(); openModal(); });
-  closeBtn?.addEventListener('click', closeModal);
-  overlay?.addEventListener('click', closeModal);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && modal?.classList.contains('open')) closeModal();
+function updateActiveBar(entry) {
+  const p=PEOPLE[entry.word];
+  const numbered=numberWords(gameLayout);
+  const num=numbered.find(e=>e.word===entry.word)?.num||'?';
+  const badge=rootEl.querySelector('#cw3AbBadge');
+  const hint=rootEl.querySelector('#cw3AbHint');
+  if(badge) badge.textContent=`${num} ${entry.dir==='H'?'→':'↓'} (${entry.word.length} letters)`;
+  if(hint)  hint.textContent=wordHints[entry.word]||'—';
+}
+
+// ─── Highlight ─────────────────────────────────────────────────────────────────
+function highlightWord(entry) {
+  rootEl.querySelectorAll('.cw3-tile').forEach(t=>{
+    t.classList.remove('cw3-active','cw3-active-cursor');
   });
+  rootEl.querySelectorAll('.cw3-clue').forEach(b=>b.classList.remove('cw3-clue-active'));
+  if(!entry) return;
+  const {word,row,col,dir}=entry;
+  for(let i=0;i<word.length;i++){
+    const r=dir==='V'?row+i:row, c=dir==='H'?col+i:col;
+    const tile=rootEl.querySelector(`.cw3-tile[data-r="${r}"][data-c="${c}"]`);
+    if(tile){
+      tile.classList.add('cw3-active');
+      if(i===activeInput.length) tile.classList.add('cw3-active-cursor');
+    }
+  }
+  const btn=rootEl.querySelector(`.cw3-clue[data-word="${entry.word}"]`);
+  if(btn){btn.classList.add('cw3-clue-active');btn.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+
+// ─── Render typed letters ───────────────────────────────────────────────────────
+function renderWordInput(entry) {
+  if(!entry) return;
+  const {word,row,col,dir}=entry;
+  for(let i=0;i<word.length;i++){
+    const r=dir==='V'?row+i:row, c=dir==='H'?col+i:col;
+    const g=rootEl.querySelector(`.cw3-glyph[data-r="${r}"][data-c="${c}"]`);
+    if(!g) continue;
+    // Already solved cells
+    if(playerGrid[r]?.[c]){
+      g.textContent=playerGrid[r][c]; g.dataset.s='ok'; continue;
+    }
+    if(i<activeInput.length){
+      g.textContent=activeInput[i]; g.dataset.s='typed';
+    } else {
+      g.textContent=''; g.dataset.s='';
+    }
+  }
+  // Re-highlight cursor position
+  highlightWord(entry);
+}
+
+// ─── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer(entry) {
+  timeLeft=hardMode?TIME_HARD:TIME_NORMAL;
+  tickTimer(entry);
+  timerID=setInterval(()=>{
+    timeLeft--;
+    tickTimer(entry);
+    if(timeLeft<=0){stopTimer();onTimeUp(entry);}
+  },1000);
+}
+function stopTimer(){clearInterval(timerID);timerID=null;}
+function tickTimer(entry){
+  const max=hardMode?TIME_HARD:TIME_NORMAL;
+  const pct=timeLeft/max;
+  const el=rootEl?.querySelector('#cw3AbTimer');
+  const ring=rootEl?.querySelector('#cw3RingFill');
+  if(el){el.textContent=timeLeft;el.dataset.u=timeLeft<=5?'critical':timeLeft<=10?'warn':'ok';}
+  if(ring){
+    const c=2*Math.PI*15.9;
+    ring.style.strokeDasharray=`${c*pct} ${c*(1-pct)}`;
+    ring.style.stroke=timeLeft<=5?'var(--rose)':timeLeft<=10?'var(--amber)':'var(--mint)';
+  }
+}
+function onTimeUp(entry){
+  streak=0; loseLife(entry,'⏱ Time\'s up!');
+  if(lives>0){activeInput='';renderWordInput(entry);advanceWord(entry);}
+}
+
+// ─── Key handler ───────────────────────────────────────────────────────────────
+function handleKey(e){
+  if(!modalOpen||!activeWord) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const entry=gameLayout.find(w=>w.word===activeWord);
+  if(!entry) return;
+
+  if(e.key==='Escape'){activeWord=null;highlightWord(null);stopTimer();return;}
+  if(e.key==='Tab'){e.preventDefault();advanceWord(entry);return;}
+  if(e.key==='Backspace'){
+    e.preventDefault();
+    activeInput=activeInput.slice(0,-1);
+    renderWordInput(entry);
+    return;
+  }
+  if(/^[a-zA-Z]$/.test(e.key)){
+    e.preventDefault();
+    if(activeInput.length>=entry.word.length) return;
+    const ch=e.key.toUpperCase();
+    activeInput+=ch;
+    renderWordInput(entry);
+
+    // Per-letter flash feedback
+    const idx=activeInput.length-1;
+    const correct=entry.word[idx];
+    flashCell(entry,idx,ch===correct?'hit':'miss');
+    if(ch!==correct){
+      streak=0; loseLife(entry,'✗ Wrong letter!');
+      if(lives>0){
+        // Remove the wrong letter after brief pause
+        setTimeout(()=>{
+          activeInput=activeInput.slice(0,-1);
+          renderWordInput(entry);
+        },350);
+      }
+    } else if(activeInput.length===entry.word.length){
+      setTimeout(()=>checkWord(entry),200);
+    }
+  }
+}
+
+function flashCell(entry,idx,type){
+  const {row,col,dir}=entry;
+  const r=dir==='V'?row+idx:row, c=dir==='H'?col+idx:col;
+  const tile=rootEl?.querySelector(`.cw3-tile[data-r="${r}"][data-c="${c}"]`);
+  tile?.classList.add(`cw3-${type}`);
+  setTimeout(()=>tile?.classList.remove(`cw3-${type}`),320);
+}
+
+function loseLife(entry,msg){
+  lives=Math.max(0,lives-1);
+  updateHUD();
+  flash(msg,'error');
+  // Shake the whole word
+  const {word,row,col,dir}=entry;
+  for(let i=0;i<word.length;i++){
+    const r=dir==='V'?row+i:row, c=dir==='H'?col+i:col;
+    const tile=rootEl?.querySelector(`.cw3-tile[data-r="${r}"][data-c="${c}"]`);
+    setTimeout(()=>{tile?.classList.add('cw3-shake');setTimeout(()=>tile?.classList.remove('cw3-shake'),550);},i*30);
+  }
+  if(lives===0) setTimeout(()=>endGame(false),600);
+}
+
+// ─── Check word ─────────────────────────────────────────────────────────────────
+function checkWord(entry){
+  const {word,row,col,dir}=entry;
+  if(activeInput!==word) return; // shouldn't reach here but guard
+  stopTimer();
+  wordStatus[word]='correct';
+  streak++;
+  const bonus=Math.max(1,timeLeft)*8*getMultiplier();
+  score+=100+bonus;
+  // Write to playerGrid
+  for(let i=0;i<word.length;i++){
+    const r=dir==='V'?row+i:row, c=dir==='H'?col+i:col;
+    if(!playerGrid[r]) playerGrid[r]=[];
+    playerGrid[r][c]=word[i];
+  }
+  renderWordInput(entry);
+  solvedOrder.push(word);
+
+  // Flash solved tiles
+  for(let i=0;i<word.length;i++){
+    const r=dir==='V'?row+i:row, c=dir==='H'?col+i:col;
+    const tile=rootEl?.querySelector(`.cw3-tile[data-r="${r}"][data-c="${c}"]`);
+    setTimeout(()=>{
+      tile?.classList.add('cw3-solved');
+      rootEl?.querySelector(`.cw3-glyph[data-r="${r}"][data-c="${c}"]`)?.setAttribute('data-s','ok');
+    },i*50);
+  }
+
+  // Show combo
+  if(getMultiplier()>1){
+    const el=rootEl?.querySelector('#cw3Combo');
+    if(el){el.textContent=`×${getMultiplier()} COMBO  +${bonus}pts`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);}
+  }
+
+  // Show reveal card for this person
+  showRevealCard(word, entry);
+
+  updateHUD();
+  updateClueState(word);
+
+  const unsolved=gameLayout.filter(e=>wordStatus[e.word]!=='correct');
+  if(!unsolved.length){
+    setTimeout(()=>endGame(true),1800);
+  } else {
+    setTimeout(()=>advanceWord(entry),1400);
+  }
+}
+
+// ─── Reveal card ────────────────────────────────────────────────────────────────
+function showRevealCard(word, entry) {
+  const p=PEOPLE[word];
+  if(!p) return;
+  const el=rootEl?.querySelector('#cw3RevealCard');
+  if(!el) return;
+  el.innerHTML=`
+    <div class="cw3-rc-inner">
+      <span class="cw3-rc-emoji">${p.emoji}</span>
+      <div class="cw3-rc-name">${p.name}</div>
+      <div class="cw3-rc-clue">"${wordHints[word]}"</div>
+    </div>`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1300);
+}
+
+// ─── Advance to next word ───────────────────────────────────────────────────────
+function advanceWord(current){
+  const numbered=numberWords(gameLayout);
+  const unsolved=numbered.filter(e=>wordStatus[e.word]!=='correct');
+  if(!unsolved.length) return;
+  const ci=unsolved.findIndex(e=>e.word===current?.word);
+  startWord(unsolved[(ci+1)%unsolved.length]);
+}
+
+// ─── HUD ────────────────────────────────────────────────────────────────────────
+function updateHUD(){
+  const lv=rootEl?.querySelector('#cw3Lives');
+  if(lv) lv.innerHTML=Array.from({length:5},(_,i)=>
+    `<span class="cw3-heart${i<lives?'':' lost'}">♥</span>`).join('');
+  const sv=rootEl?.querySelector('#cw3Score');   if(sv) sv.textContent=score;
+  const st=rootEl?.querySelector('#cw3Streak');  if(st) st.textContent=streak;
+  const done=Object.values(wordStatus).filter(s=>s==='correct').length;
+  const lf=rootEl?.querySelector('#cw3Left'); if(lf) lf.textContent=`${done}/${gameLayout.length}`;
+}
+
+function updateClueState(word){
+  const btn=rootEl?.querySelector(`.cw3-clue[data-word="${word}"]`);
+  btn?.classList.add('cw3-clue-done');
+}
+
+function flash(msg,type='error'){
+  const el=rootEl?.querySelector('#cw3Flash');
+  if(!el) return;
+  el.textContent=msg; el.dataset.type=type; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),1600);
+}
+
+// ─── End game ──────────────────────────────────────────────────────────────────
+function endGame(won){
+  stopTimer();
+  activeWord=null; highlightWord(null);
+  if(!won){
+    // Reveal all unsolved
+    for(const e of gameLayout){
+      if(wordStatus[e.word]!=='correct'){
+        const p=PEOPLE[e.word];
+        for(let i=0;i<e.word.length;i++){
+          const r=e.dir==='V'?e.row+i:e.row, c=e.dir==='H'?e.col+i:e.col;
+          const g=rootEl?.querySelector(`.cw3-glyph[data-r="${r}"][data-c="${c}"]`);
+          if(g){g.textContent=e.word[i];g.dataset.s='revealed';}
+        }
+      }
+    }
+  } else {
+    fireConfetti();
+  }
+
+  const solved=Object.values(wordStatus).filter(s=>'correct').length;
+  const el=rootEl?.querySelector('#cw3End');
+  if(!el) return;
+  el.innerHTML=`
+    <div class="cw3-ep">
+      <div class="cw3-ep-icon">${won?'🎉':'💀'}</div>
+      <div class="cw3-ep-title">${won?'YOU KNOW YOUR PEOPLE!':'BETTER LUCK NEXT TIME'}</div>
+      <div class="cw3-ep-score">Score: <strong>${score}</strong></div>
+      <div class="cw3-ep-sub">${won?`All ${gameLayout.length} friends found!`:`${solvedOrder.length} / ${gameLayout.length} found`}</div>
+      ${won?`<div class="cw3-ep-order">${solvedOrder.map(w=>`<span title="${PEOPLE[w]?.name}">${PEOPLE[w]?.emoji}</span>`).join(' ')}</div>`:''}
+      <div class="cw3-ep-btns">
+        <button class="btn btn-primary" id="cw3Again">Play Again</button>
+        <button class="btn btn-ghost" id="cw3Toggle">${hardMode?'Normal Mode':'Hard Mode 🔥'}</button>
+      </div>
+    </div>`;
+  el.classList.add('show');
+  el.querySelector('#cw3Again')?.addEventListener('click',()=>{el.classList.remove('show');initGame();});
+  el.querySelector('#cw3Toggle')?.addEventListener('click',()=>{hardMode=!hardMode;el.classList.remove('show');initGame();});
+}
+
+// ─── Confetti ──────────────────────────────────────────────────────────────────
+function fireConfetti(){
+  const cv=document.createElement('canvas');
+  cv.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9999';
+  document.body.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const C=['#00FFBD','#FF2D55','#BF5FFF','#FFB800','#FF8C42','#fff'];
+  const pts=Array.from({length:130},()=>({x:Math.random()*cv.width,y:-30-Math.random()*100,vx:(Math.random()-.5)*8,vy:Math.random()*3+2,rot:Math.random()*360,spin:(Math.random()-.5)*12,w:Math.random()*12+5,h:Math.random()*6+3,color:C[~~(Math.random()*C.length)]}));
+  let alive=true;
+  setTimeout(()=>{alive=false;setTimeout(()=>cv.remove(),500);},3200);
+  (function f(){if(!alive)return;ctx.clearRect(0,0,cv.width,cv.height);for(const p of pts){p.x+=p.vx;p.y+=p.vy;p.vy+=0.07;p.rot+=p.spin;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-p.y/cv.height*1.3);ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();}requestAnimationFrame(f);})();
+}
+
+// ─── Init game ─────────────────────────────────────────────────────────────────
+function initGame(){
+  gameLayout=LAYOUTS[~~(Math.random()*LAYOUTS.length)];
+  wordHints={}; wordStatus={}; solvedOrder=[];
+  for(const {word} of gameLayout){
+    wordHints[word]=shuffle(PEOPLE[word]?.hints||['Who is this?'])[0];
+    wordStatus[word]='unsolved';
+  }
+  answerGrid=buildAnswerGrid(gameLayout);
+  playerGrid=Array.from({length:GRID_SIZE},()=>Array(GRID_SIZE).fill(null));
+  activeWord=null; activeInput='';
+  lives=hardMode?3:5; score=0; streak=0;
+
+  buildUI(getBounds(gameLayout));
+
+  // Auto-start first word
+  setTimeout(()=>{
+    const first=numberWords(gameLayout).sort((a,b)=>a.num-b.num).find(e=>wordStatus[e.word]!=='correct');
+    if(first) startWord(first);
+  },400);
+}
+
+// ─── Export ─────────────────────────────────────────────────────────────────────
+export function initCrossword(){
+  const card    =document.getElementById('openCrosswordCard');
+  const modal   =document.getElementById('crosswordModal');
+  const closeBtn=document.getElementById('crosswordClose');
+  const overlay =modal?.querySelector('.modal-overlay');
+  const content =document.getElementById('crosswordContent');
+  if(!card||!modal||!content) return;
+
+  function open(){
+    modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    modalOpen=true; rootEl=content;
+    initGame();
+    document.addEventListener('keydown',handleKey);
+  }
+  function close(){
+    modal.classList.remove('open'); modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow=''; modalOpen=false;
+    stopTimer();
+    document.removeEventListener('keydown',handleKey);
+  }
+  card.addEventListener('click',open);
+  card.querySelector('.gc-btn')?.addEventListener('click',e=>{e.stopPropagation();open();});
+  closeBtn?.addEventListener('click',close);
+  overlay?.addEventListener('click',close);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))close();});
 }
