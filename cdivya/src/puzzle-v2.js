@@ -287,9 +287,8 @@ function generateArtwork(index) {
   return cv;
 }
 
-function collapseZoomPanel() {
-  const panel = document.getElementById('pvZoomPanel');
-  if (panel) { panel.classList.remove('show'); }
+function collapseZoomPanel(previewEl) {
+  previewEl?.classList.remove('pv-expanded');
 }
 
 function sliceTile(artCanvas, tileIndex) {
@@ -434,25 +433,9 @@ export function initPuzzle() {
       previewEl.style.backgroundImage = `url(${artCanvas.toDataURL()})`;
       // Click to zoom
       previewEl.onclick = null;
+      // Toggle: click thumbnail to expand it in-place, click again to collapse
       previewEl.onclick = () => {
-        let panel = document.getElementById('pvZoomPanel');
-        if (panel?.classList.contains('show')) {
-          collapseZoomPanel(); return;
-        }
-        // Create panel inside the modal-box (not body) so it stays within bounds
-        const modalBox = document.querySelector('#puzzleModal .modal-box');
-        if (!modalBox) return;
-        if (!panel) {
-          panel = document.createElement('div');
-          panel.id = 'pvZoomPanel';
-          panel.className = 'pv-zoom-panel';
-          panel.innerHTML = '<span class="pv-zoom-label">CLICK TO CLOSE</span>';
-          panel.onclick = collapseZoomPanel;
-          modalBox.appendChild(panel);
-        }
-        // Set background to same image as preview
-        panel.style.backgroundImage = previewEl.style.backgroundImage;
-        panel.classList.add('show');
+        previewEl.classList.toggle('pv-expanded');
       };
     }
     if (artNameEl) artNameEl.textContent = ARTWORKS[artIndex%ARTWORKS.length].name;

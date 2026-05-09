@@ -627,51 +627,29 @@ button:focus-visible, a:focus-visible { border-radius: 8px; }
 /* ── Puzzle ── */
 .puzzle-meta { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; flex-wrap:wrap; }
 .puzzle-preview {
-  width:52px; height:52px; border-radius:8px; flex-shrink:0;
-  background-size:cover; background-position:center;
-  border:2px solid var(--border); box-shadow:0 0 14px rgba(191,95,255,.25);
-  cursor:zoom-in;
-  transition:transform .2s var(--spring), box-shadow .2s, border-color .2s;
+  /* Base: small thumbnail */
+  width: 52px; height: 52px;
+  border-radius: 8px; flex-shrink: 0;
+  background-size: cover; background-position: center;
+  border: 2px solid var(--border);
+  box-shadow: 0 0 14px rgba(191,95,255,.25);
+  cursor: zoom-in;
+  transition: width .28s var(--spring), height .28s var(--spring),
+              border-radius .28s, border-color .2s, box-shadow .2s, transform .15s;
 }
-.puzzle-preview:hover {
-  transform:scale(1.08);
+.puzzle-preview:hover:not(.pv-expanded) {
+  transform: scale(1.08);
   border-color: rgba(191,95,255,.5);
 }
-
-/* Zoom panel — appears INSIDE the modal, to the right of the board */
-.pv-zoom-panel {
-  position:absolute;
-  top: 50%; right: 1.25rem;
-  transform: translateY(-50%) scale(.92);
-  width: min(180px, 28%);
-  aspect-ratio: 1;
-  border-radius: 14px;
-  background-size: cover;
-  background-position: center;
-  border: 2px solid var(--lilac);
-  box-shadow: 0 12px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(191,95,255,.3);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .22s ease, transform .22s var(--spring);
-  z-index: 10;
-}
-.pv-zoom-panel.show {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateY(-50%) scale(1);
+/* Expanded: grows in-place inside the meta strip, no overlap with board */
+.puzzle-preview.pv-expanded {
+  width: 148px;
+  height: 148px;
+  border-radius: 12px;
+  border-color: var(--lilac);
+  box-shadow: 0 8px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(191,95,255,.4);
   cursor: zoom-out;
-}
-.pv-zoom-label {
-  position: absolute;
-  bottom: .5rem; left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--fH);
-  font-size: .6rem;
-  font-weight: 700;
-  letter-spacing: .12em;
-  color: rgba(255,255,255,.45);
-  white-space: nowrap;
-  pointer-events: none;
+  transform: none;
 }
 .puzzle-meta-text { flex:1; min-width:0; }
 .p-art-label { font-size:.7rem; color:var(--sub); font-family:var(--fH); text-transform:uppercase; letter-spacing:.08em; display:block; }
