@@ -630,32 +630,49 @@ button:focus-visible, a:focus-visible { border-radius: 8px; }
   width:52px; height:52px; border-radius:8px; flex-shrink:0;
   background-size:cover; background-position:center;
   border:2px solid var(--border); box-shadow:0 0 14px rgba(191,95,255,.25);
-  cursor:zoom-in; transition:transform .25s var(--spring), box-shadow .25s;
-  position:relative; z-index:1;
+  cursor:zoom-in;
+  transition:transform .2s var(--spring), box-shadow .2s, border-color .2s;
 }
 .puzzle-preview:hover {
   transform:scale(1.08);
+  border-color: rgba(191,95,255,.5);
 }
-/* Enlarged overlay on click */
-.puzzle-preview.pv-zoomed {
-  position:fixed;
-  width: min(220px, 38vw);
-  height: min(220px, 38vw);
-  border-radius:14px;
-  box-shadow:0 16px 60px rgba(0,0,0,.75), 0 0 0 2px var(--lilac);
-  cursor:zoom-out;
-  z-index:800;
-  transform:none;
-  transition:width .22s var(--spring), height .22s var(--spring),
-             border-radius .22s, box-shadow .22s;
+
+/* Zoom panel — appears INSIDE the modal, to the right of the board */
+.pv-zoom-panel {
+  position:absolute;
+  top: 50%; right: 1.25rem;
+  transform: translateY(-50%) scale(.92);
+  width: min(180px, 28%);
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--lilac);
+  box-shadow: 0 12px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(191,95,255,.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s var(--spring);
+  z-index: 10;
 }
-.pv-backdrop {
-  position:fixed; inset:0; z-index:799;
-  background:rgba(0,0,0,.45); backdrop-filter:blur(4px);
-  cursor:zoom-out;
-  animation:pvFadeIn .18s ease forwards;
+.pv-zoom-panel.show {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(-50%) scale(1);
+  cursor: zoom-out;
 }
-@keyframes pvFadeIn { from{opacity:0} to{opacity:1} }
+.pv-zoom-label {
+  position: absolute;
+  bottom: .5rem; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--fH);
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: rgba(255,255,255,.45);
+  white-space: nowrap;
+  pointer-events: none;
+}
 .puzzle-meta-text { flex:1; min-width:0; }
 .p-art-label { font-size:.7rem; color:var(--sub); font-family:var(--fH); text-transform:uppercase; letter-spacing:.08em; display:block; }
 .p-art-name  { font-size:.88rem; font-weight:700; color:var(--text); font-family:var(--fH); }

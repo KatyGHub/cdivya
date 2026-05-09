@@ -287,10 +287,9 @@ function generateArtwork(index) {
   return cv;
 }
 
-function collapsePreview(el) {
-  el.classList.remove('pv-zoomed');
-  el.style.top = ''; el.style.left = '';
-  document.getElementById('pvBackdrop')?.remove();
+function collapseZoomPanel() {
+  const panel = document.getElementById('pvZoomPanel');
+  if (panel) { panel.classList.remove('show'); }
 }
 
 function sliceTile(artCanvas, tileIndex) {
@@ -436,26 +435,24 @@ export function initPuzzle() {
       // Click to zoom
       previewEl.onclick = null;
       previewEl.onclick = () => {
-        if (previewEl.classList.contains('pv-zoomed')) {
-          collapsePreview(previewEl); return;
+        let panel = document.getElementById('pvZoomPanel');
+        if (panel?.classList.contains('show')) {
+          collapseZoomPanel(); return;
         }
-        // Anchor enlarged preview near the thumbnail
-        const rect = previewEl.getBoundingClientRect();
-        const size = Math.min(220, Math.min(window.innerWidth * 0.38, window.innerHeight * 0.38));
-        // Position: try to show below-right, but keep on screen
-        let top  = rect.bottom + 8;
-        let left = rect.left;
-        if (top + size > window.innerHeight - 12) top = rect.top - size - 8;
-        if (left + size > window.innerWidth  - 12) left = window.innerWidth - size - 12;
-        previewEl.style.top    = top  + 'px';
-        previewEl.style.left   = left + 'px';
-        previewEl.classList.add('pv-zoomed');
-        // Backdrop
-        const bd = document.createElement('div');
-        bd.className = 'pv-backdrop';
-        bd.id = 'pvBackdrop';
-        bd.onclick = () => collapsePreview(previewEl);
-        document.body.appendChild(bd);
+        // Create panel inside the modal-box (not body) so it stays within bounds
+        const modalBox = document.querySelector('#puzzleModal .modal-box');
+        if (!modalBox) return;
+        if (!panel) {
+          panel = document.createElement('div');
+          panel.id = 'pvZoomPanel';
+          panel.className = 'pv-zoom-panel';
+          panel.innerHTML = '<span class="pv-zoom-label">CLICK TO CLOSE</span>';
+          panel.onclick = collapseZoomPanel;
+          modalBox.appendChild(panel);
+        }
+        // Set background to same image as preview
+        panel.style.backgroundImage = previewEl.style.backgroundImage;
+        panel.classList.add('show');
       };
     }
     if (artNameEl) artNameEl.textContent = ARTWORKS[artIndex%ARTWORKS.length].name;
