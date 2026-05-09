@@ -7,23 +7,23 @@
 // ─── People ────────────────────────────────────────────────────────────────────
 // crossword key → { display name, emoji, hints[] }
 const PEOPLE = {
-  KAARTHIK:    { name:'Kaarthik',     emoji:'🧢', hints:['TVK member', 'Known as EJ Keerthana', 'The fake Malayali of the group', 'Theevira Vijay Kanni'] },
-  VARSHINII:   { name:'Varshinii',    emoji:'✨', hints:['SASTRA alumni', 'The unexpected one', 'Chintu', 'Has double I and still spells it right actually'] },
-  VACHU:       { name:'Vachu',        emoji:'🍳', hints:['Unekenapa', 'From Atthipatti', 'Jukebox regular', 'Stove off pannava'] },
-  ARUN:        { name:'Arun',         emoji:'🏀', hints:['Basketball guy', 'Panamaram native', 'The quiet one until he isn\'t'] },
-  NIVETHA:     { name:'Nivetha',      emoji:'🦸', hints:['The V pose at every photo', 'The Rock energy', 'Batman enthusiast', 'k-culture president'] },
-  HARSHA:      { name:'Harsha',       emoji:'🎬', hints:['Punctuality ku per ponava', 'Tamil movie/song knowledge on peak', 'Has something herbal for everything'] },
-  HARISH:      { name:'Harish',       emoji:'🌾', hints:['Farmer at heart', 'Never seen without a towel shirt', 'Ann', 'Jukebox collaborator'] },
-  HARIKRISHNA: { name:'Hari Krishna', emoji:'🙏', hints:['Mother\'s blessed child', 'Murugan Idly guy', 'Believes wife shouldn\'t wear makeup', 'Group oda gentle giant'] },
-  MALAVIKAA:   { name:'Malavikaa',    emoji:'🔋', hints:['AA Battery — she literally has 2 A\'s', 'German resident per Instagram', 'United by blood with someone here'] },
-  YESHU:       { name:'Yeshu',        emoji:'✈️', hints:['Canada-based', 'Bro who unites north and south', 'The cd connection', 'SHAHID SAFIULLA'] },
-  NISHI:       { name:'Nishi',        emoji:'👑', hints:['The group\'s mother', 'SHAHID SAFIULLA', 'Meesaiya Murukku', 'The one who keeps everyone together'] },
-  JEFFREY:     { name:'Jeffrey',      emoji:'⛪', hints:['Church guy', 'Kusu', 'Robo Shankar vibes', 'Muscat connection'] },
-  JASHWANTH:   { name:'Jashwanth',    emoji:'🎥', hints:['Future MLA', 'Future movie star', 'Future AP CM', 'Already acts like all three'] },
-  ADITINAG:    { name:'Aditi Nag',    emoji:'📞', hints:['Divs', 'Can we connect quickly on your leave?', 'Paithyakari', 'Always first to check in'] },
-  GOBI:        { name:'Gobi',         emoji:'🗿', hints:['Spartan mindset', 'Tribal dance enthusiast', 'Pudhu maapillai in the making'] },
-  DEEPTHI:     { name:'Deepthi',      emoji:'🎉', hints:['Ayyyyyyyyy', 'SHAHID SAFIULLA', 'Shrivanth', 'Vishnu', 'Gopi', 'The loudest entrance every time'] },
-};
+  KAARTHIK:    { name:'Kaarthik',     emoji:'🧢', hints:['Theevira Vijay Kanni (TVK)', 'EJ Keerthana', 'Fake Malayali'] },
+  VARSHINII:   { name:'Varshinii',    emoji:'✨', hints:['SASTRA', 'The Unexpected Varshini', 'Chintu'] },
+  VACHU:       { name:'Vachu',        emoji:'🍳', hints:['Unekenapa', 'Atthipatti', 'Harish P', 'Jukebox', 'Stove Off Pannava'] },
+  ARUN:        { name:'Arun',         emoji:'🏀', hints:['Basketball', 'Panamaram'] },
+  NIVETHA:     { name:'Nivetha',      emoji:'🦸', hints:['V Pose', 'The Rock', 'Harish P', 'Batman', 'K-Culture President'] },
+  HARSHA:      { name:'Harsha',       emoji:'🎬', hints:['Punctuality Ku Per Ponava', 'Marijuana', 'Tamil Movie/Song Knowledge In Peak'] },
+  HARISH:      { name:'Harish',       emoji:'🌾', hints:['Farmer', 'Towel Shirt Lover', 'Ann', 'Jukebox'] },
+  HARIKRISHNA: { name:'Hari Krishna', emoji:'🙏', hints:['Mothers Blessings', "Need Wife Who Doesn't Put Makeup", 'Murugan Idly'] },
+  MALAVIKAA:   { name:'Malavikaa',    emoji:'🔋', hints:['AA Battery Coz She Has 2 As', 'German Resident Acc To Insta', 'United By Blood'] },
+  YESHU:       { name:'Yeshu',        emoji:'✈️', hints:['Canada', 'Bro Unites North And South', 'Cd', 'Rishi', 'SHAHID SAFIULLA'] },
+  NISHI:       { name:'Nishi',        emoji:'👑', hints:['Group Oda Mother', 'SHAHID SAFIULLA', 'Meesaiya Murukku'] },
+  JEFFREY:     { name:'Jeffrey',      emoji:'⛪', hints:['Church', 'Kusu', 'Robo Shankar', 'Muscat'] },
+  JASHWANTH:   { name:'Jashwanth',    emoji:'🎥', hints:['Mla', 'Future Movie Star', 'Future AP CM'] },
+  ADITINAG:    { name:'Aditi Nag',    emoji:'📞', hints:['Divs', 'Can We Connect Quickly On Your Leave?', 'Paithyakari'] },
+  GOBI:        { name:'Gobi',         emoji:'🗿', hints:['Spartan', 'Tribal Dance', 'Pudhu Maapillai'] },
+  DEEPTHI:     { name:'Deepthi',      emoji:'🎉', hints:['Ayyyyyyyyy', 'SHAHID SAFIULLA', 'Shrivanth', 'Vishnu', 'Gopi'] },
+}};
 
 // ─── 4 pre-computed valid layouts (26×26 grid) ─────────────────────────────────
 const LAYOUTS = [
