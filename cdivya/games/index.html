@@ -147,35 +147,7 @@
       <div class="modal-overlay" id="crosswordOverlay"></div>
       <div class="modal-box modal-box--xl">
         <button class="modal-close" id="crosswordClose">✕</button>
-        <div class="cw-layout">
-          <div class="cw-left">
-            <div class="modal-header">
-              <span class="modal-emoji">🔠</span>
-              <h2 class="modal-title">The Crossword</h2>
-              <p class="modal-desc">Click a cell to select. Type to fill. Click a clue number to reveal its hint.</p>
-            </div>
-            <div class="cw-grid-wrap">
-              <div class="cw-grid" id="cwGrid" role="grid" aria-label="Crossword grid"></div>
-            </div>
-            <div class="cw-controls">
-              <button class="btn btn-ghost btn-sm" id="cwCheck">Check</button>
-              <button class="btn btn-ghost btn-sm" id="cwClear">Clear</button>
-              <div class="cw-status" id="cwStatus"></div>
-            </div>
-          </div>
-          <div class="cw-right">
-            <div class="cw-clues">
-              <div class="cw-clue-group">
-                <h3 class="cw-clue-heading">Across</h3>
-                <div id="cwCluesAcross" class="cw-clue-list"></div>
-              </div>
-              <div class="cw-clue-group">
-                <h3 class="cw-clue-heading">Down</h3>
-                <div id="cwCluesDown" class="cw-clue-list"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div id="crosswordContent"></div>
       </div>
     </div>
 
