@@ -23,7 +23,7 @@ const PEOPLE = {
   ADITINAG:    { name:'Aditi Nag',    emoji:'📞', hints:['Divs', 'Can We Connect Quickly On Your Leave?', 'Paithyakari'] },
   GOBI:        { name:'Gobi',         emoji:'🗿', hints:['Spartan', 'Tribal Dance', 'Pudhu Maapillai'] },
   DEEPTHI:     { name:'Deepthi',      emoji:'🎉', hints:['Ayyyyyyyyy', 'SHAHID SAFIULLA', 'Shrivanth', 'Vishnu', 'Gopi'] },
-}};
+};
 
 // ─── 4 pre-computed valid layouts (26×26 grid) ─────────────────────────────────
 const LAYOUTS = [
