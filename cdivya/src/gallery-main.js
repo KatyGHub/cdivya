@@ -47,8 +47,8 @@ async function bootstrap() {
     if (emptyEl) {
       emptyEl.innerHTML = `
         <div class="empty-icon">📷</div>
-        <div class="empty-title">Gallery not configured</div>
-        <p class="empty-sub">Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel settings.</p>
+        <div class="empty-title">Coming soon</div>
+        <p class="empty-sub">Her photos are on their way. Check back in a moment.</p>
       `;
       emptyEl.classList.add('show');
     }

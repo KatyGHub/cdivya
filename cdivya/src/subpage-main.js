@@ -52,8 +52,14 @@ function initBioSection() {
       const rect  = section.getBoundingClientRect();
       const total = section.offsetHeight - window.innerHeight;
       const pct   = Math.max(0, Math.min(1, -rect.top / total));
-      const maxH  = window.innerHeight * 0.4;
-      progressBar.style.height = (pct * maxH) + 'px';
+      if (window.innerWidth <= 768) {
+        progressBar.style.height = '3px';
+        progressBar.style.width  = (pct * 100) + '%';
+      } else {
+        const maxH = window.innerHeight * 0.4;
+        progressBar.style.height = (pct * maxH) + 'px';
+        progressBar.style.width  = '';
+      }
     }
   }
 

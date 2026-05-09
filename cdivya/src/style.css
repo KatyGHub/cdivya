@@ -1035,7 +1035,16 @@ button:focus-visible, a:focus-visible { border-radius: 8px; }
 }
 
 @media (max-width: 768px) {
-  .bio-progress-bar { display: none; }
+  .bio-progress-bar {
+    /* On mobile: horizontal bar at the top of the screen */
+    position: fixed;
+    left: 0; top: 0; right: 0;
+    width: 100% !important;
+    height: 3px !important;
+    transform: none !important;
+    background: linear-gradient(to right, var(--mint), var(--purple)) !important;
+    border-radius: 0 !important;
+  }
   .bio-section { padding: 3rem 0 4rem; }
   .bio-container { padding: 0 1.25rem; }
   .bio-para { opacity: 1; } /* always visible on mobile */
@@ -3425,4 +3434,60 @@ html { scroll-behavior: smooth; }
   .cw3-sidebar { flex-direction:row; flex-wrap:wrap; max-height:180px; overflow-y:auto; gap:.4rem; }
   .cw3-clue-group { flex:1; min-width:130px; }
   .cw3-grid { grid-template-columns:repeat(var(--cw-cols),min(24px,6.5vw)); grid-template-rows:repeat(var(--cw-rows),min(24px,6.5vw)); }
+}
+
+/* ═══════════════════════════════════════════════════
+   MISC POLISH — items 2-8
+   ═══════════════════════════════════════════════════ */
+
+/* 4. Splash keyboard hint */
+.bd-key-hint {
+  font-size: .68rem;
+  color: rgba(255,255,255,.25);
+  letter-spacing: .06em;
+  font-family: var(--fH);
+  margin-top: -.4rem;
+}
+.bd-key-hint kbd {
+  font-family: var(--fH);
+  font-size: .65rem;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 4px;
+  padding: .05rem .35rem;
+  color: rgba(255,255,255,.45);
+}
+
+/* 7. Hero secret hint */
+.hero-secret-hint {
+  font-family: var(--fH);
+  font-size: .65rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.13);
+  margin-top: .5rem;
+  transition: color .3s;
+  cursor: default;
+  user-select: none;
+}
+.hero-secret-hint:hover { color: rgba(255,255,255,.25); }
+
+/* 8. Crossword hint cycle button */
+.cw3-hint-cycle {
+  font-size: .9rem;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--sub);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .15s, border-color .15s, transform .2s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.cw3-hint-cycle:hover {
+  color: var(--mint);
+  border-color: rgba(0,255,189,.4);
+  transform: rotate(180deg);
 }

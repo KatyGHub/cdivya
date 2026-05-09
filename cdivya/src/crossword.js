@@ -115,6 +115,8 @@ let gameLayout   = [];
 let answerGrid   = [];
 let playerGrid   = [];
 let wordHints    = {};
+let wordHintSets = {};  // all shuffled hints per word
+let wordHintIdx  = {};  // current hint index per word
 let wordStatus   = {};   // 'unsolved' | 'correct' | 'failed'
 let activeWord   = null;
 let activeInput  = '';
@@ -231,6 +233,7 @@ function buildUI(bounds) {
           <span class="cw3-ab-hint" id="cw3AbHint">← Select a clue or cell to begin</span>
         </div>
         <div class="cw3-ab-right">
+          <button class="cw3-hint-cycle" id="cw3HintCycle" title="Different clue">↻</button>
           <span class="cw3-ab-timer" id="cw3AbTimer"></span>
           <div class="cw3-timer-ring" id="cw3TimerRing">
             <svg viewBox="0 0 36 36"><circle class="cw3-ring-bg" cx="18" cy="18" r="15.9"/><circle class="cw3-ring-fill" id="cw3RingFill" cx="18" cy="18" r="15.9"/></svg>
@@ -266,6 +269,11 @@ function buildUI(bounds) {
     <div class="cw3-reveal-card" id="cw3RevealCard"></div>
     <div class="cw3-endpanel" id="cw3End"></div>
   </div>`;
+
+  // Wire hint cycle button
+  rootEl.querySelector('#cw3HintCycle')?.addEventListener('click', () => {
+    if (activeWord) cycleHint(activeWord);
+  });
 
   // Wire grid cell clicks
   rootEl.querySelectorAll('.cw3-tile').forEach(cell=>{
@@ -305,6 +313,19 @@ function startWord(entry) {
   highlightWord(entry);
   updateActiveBar(entry);
   renderWordInput(entry);
+}
+
+function cycleHint(word) {
+  const hints = wordHintSets[word];
+  if (!hints || hints.length <= 1) return;
+  wordHintIdx[word] = (wordHintIdx[word] + 1) % hints.length;
+  wordHints[word]   = hints[wordHintIdx[word]];
+  // Update active bar if this is the active word
+  const entry = gameLayout.find(e => e.word === word);
+  if (entry && activeWord === word) updateActiveBar(entry);
+  // Update clue list
+  const clueText = rootEl?.querySelector(`.cw3-clue[data-word="${word}"] .cw3-ct`);
+  if (clueText) clueText.textContent = wordHints[word];
 }
 
 function updateActiveBar(entry) {
@@ -605,8 +626,11 @@ function initGame(){
   gameLayout=LAYOUTS[~~(Math.random()*LAYOUTS.length)];
   wordHints={}; wordStatus={}; solvedOrder=[];
   for(const {word} of gameLayout){
-    wordHints[word]=shuffle(PEOPLE[word]?.hints||['Who is this?'])[0];
-    wordStatus[word]='unsolved';
+    const hints = PEOPLE[word]?.hints || ['Who is this?'];
+    wordHintSets[word] = shuffle([...hints]);
+    wordHintIdx[word]  = 0;
+    wordHints[word]    = wordHintSets[word][0];
+    wordStatus[word]   = 'unsolved';
   }
   answerGrid=buildAnswerGrid(gameLayout);
   playerGrid=Array.from({length:GRID_SIZE},()=>Array(GRID_SIZE).fill(null));
